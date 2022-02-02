@@ -1,0 +1,8 @@
+FROM node:16.13.2-stretch
+
+#RUN apt-get update && apt-get install -y procps
+
+RUN npm install -g typescript \
+    && npm i -g @nestjs/cli
+
+CMD [ "node" ]
