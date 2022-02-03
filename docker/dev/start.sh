@@ -12,7 +12,7 @@ docker run --rm -v $(pwd)/../../app:/app -w /app node:16.13.2-stretch-slim npm i
 # Up docker compose
 echo -n "Up docker compose..."
 echo -en '\n'
-docker-compose up -d
+docker-compose up
 
 #echo -n "Waiting the mongo server..."
 #echo -en '\n'

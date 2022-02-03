@@ -35,6 +35,7 @@ services:
     environment:
       NODE_ENV: 'dev'
       APP_SECRET: 'change_it'
+      MONGO_CONNECTION_STRING: 'mongodb://mongodb-service:27017/chatwheel'
       MONGO_INITDB_DATABASE: 'chatwheel'
       MONGO_REPLICASET: 'rs_chatwheel'
       MONGO_DATABASE_PORT: '27017'
@@ -48,7 +49,7 @@ services:
 #      MAIL_PORT: 25
 #      MAIL_USER: test
 #      MAIL_PASSWORD: test
-#      EMAIL_NO_REPLY: 'noreply@localhost.ru'
+      EMAIL_NO_REPLY: 'noreply@localhost.ru'
 #      SSL_KEY_FILE_PATH: ''
 #      SLL_CERT_FILE_PATH: ''
 
@@ -57,7 +58,7 @@ services:
     image: mongo:4.0.10-xenial
     container_name: 'mongo-db-container-dev'
     ports:
-      - '30001:27017'
+      - '27017:27017'
     restart: always
     volumes:
       - chatwheel_db_dev:/data/db
