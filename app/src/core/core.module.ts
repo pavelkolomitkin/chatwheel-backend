@@ -1,4 +1,4 @@
-import {ClassSerializerInterceptor, Global, Module, ValidationPipe} from '@nestjs/common';
+import {ClassSerializerInterceptor, Global, Module} from '@nestjs/common';
 import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
 import {BadRequestFilter} from './fiters/bad-request.filter';
 import {ConfigModule, ConfigService} from '@nestjs/config';
@@ -38,10 +38,6 @@ import { provider as EmailServiceProvider } from './providers/email-service.prov
 
     ],
     providers: [
-        {
-            provide: APP_PIPE,
-            useClass: ValidationPipe
-        },
         {
             provide: APP_FILTER,
             useClass: BadRequestFilter,

@@ -12,6 +12,7 @@ export class UniqueUserEmailValidator implements ValidatorConstraintInterface
     }
 
     defaultMessage(validationArguments?: ValidationArguments): string {
+
         return 'This email already exists!';
     }
 

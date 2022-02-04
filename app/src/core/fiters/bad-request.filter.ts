@@ -14,16 +14,17 @@ export class BadRequestFilter implements ExceptionFilter
 
         const status = exception.getStatus();
 
-        debugger
         let errors = {};
         // @ts-ignore
-        if (Array.isArray(exception.message.message))
+        const messages = exception.getResponse().message;
+        // @ts-ignore
+        if (Array.isArray(messages))
         {
             // @ts-ignore
-            for (let i = 0; i < exception.message.message.length; i++)
+            for (let i = 0; i < messages.length; i++)
             {
                 // @ts-ignore
-                const message = exception.message.message[i];
+                const message = messages[i];
                 if (!errors[message.property])
                 {
                     errors[message.property] = [];
@@ -46,5 +47,4 @@ export class BadRequestFilter implements ExceptionFilter
         });
 
     }
-
 }

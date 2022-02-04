@@ -10,12 +10,17 @@ import {LoginPasswordRegisterDto} from "../dto/login-password-register.dto";
 import {ConfirmationUserAccountKey} from "../schemas/confirmation-user-account-key.schema";
 import {ConfirmationAccountKeyService} from "./confirmation-account-key.service";
 import {MailService} from "./mail.service";
+import {UserConfirmRegisterDto} from "../dto/user-confirm-register.dto";
+import {User} from "../../core/schemas/user.schema";
+import {JwtService} from "@nestjs/jwt";
 
 @Injectable()
 export class LoginPasswordService extends BaseService
 {
+    // @ts-ignore
     constructor(
         @InjectModel(ClientUser.name) private readonly userModel: Model<ClientUserDocument>,
+        @InjectModel(ConfirmationUserAccountKey.name) private readonly confirmationKeyModel: Model<ConfirmationUserAccountKey>,
         private readonly confirmationKeyService: ConfirmationAccountKeyService,
         private readonly mailService: MailService)
     {
@@ -50,5 +55,21 @@ export class LoginPasswordService extends BaseService
         await this.mailService.sendAccountConfirmationKey(confirmationKey);
 
         return result;
+    }
+
+    async confirmRegisteredAccount(data: UserConfirmRegisterDto): Promise<ClientUserDocument>
+    {
+        const key: ConfirmationUserAccountKey = await this
+            .confirmationKeyModel
+            .findOne({ key: data.key })
+            .populate('user');
+
+        const user: ClientUserDocument = key.user;
+
+        user.isActivated = true;
+        await user.save();
+        await key.remove();
+
+        return user;
     }
 }
