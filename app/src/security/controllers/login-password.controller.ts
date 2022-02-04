@@ -22,9 +22,10 @@ export class LoginPasswordController extends BaseController
     async login(@Body() credentials: LoginPasswordCredentialsDto)
     {
         // login a user with the credentials
+        const token: string = await this.service.login(credentials);
 
         return {
-            token: 'this is the secret key!'
+            token
         };
     }
 
