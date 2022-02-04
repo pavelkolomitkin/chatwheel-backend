@@ -1,5 +1,5 @@
 import {BaseController} from "./base.controller";
-import {Body, Controller, HttpCode, HttpStatus, Post} from "@nestjs/common";
+import {Body, Controller, HttpCode, HttpStatus, Post, Put} from "@nestjs/common";
 import {LoginPasswordCredentialsDto} from "../dto/login-password-credentials.dto";
 import {LoginPasswordService} from "../services/login-password.service";
 import {LoginPasswordRegisterDto} from "../dto/login-password-register.dto";
@@ -32,5 +32,11 @@ export class LoginPasswordController extends BaseController
         const user: ClientUserDocument = await this.service.register(data);
 
         return {};
+    }
+
+    @Put('register-confirm/:key')
+    @HttpCode(HttpStatus.OK)
+    async registerConfirm() {
+
     }
 }

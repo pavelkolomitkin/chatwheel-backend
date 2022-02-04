@@ -9,7 +9,6 @@ import { Model } from 'mongoose';
 export class UniqueUserEmailValidator implements ValidatorConstraintInterface
 {
     constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
-        debugger
     }
 
     defaultMessage(validationArguments?: ValidationArguments): string {
@@ -18,7 +17,6 @@ export class UniqueUserEmailValidator implements ValidatorConstraintInterface
 
     async validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> {
 
-        debugger
         const user = await this.userModel.findOne({email: value});
 
         return !user;
