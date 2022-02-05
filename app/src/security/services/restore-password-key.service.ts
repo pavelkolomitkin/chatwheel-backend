@@ -16,6 +16,22 @@ export class RestorePasswordKeyService
     ) {
     }
 
+    async isKeyValid(key: string): Promise<boolean>
+    {
+        const keyEntity: RestoreUserPasswordKey = await this.model.findOne({ key });
+        if (!keyEntity)
+        {
+            return false;
+        }
+
+        if (!this.isKeyExpired(keyEntity))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     async create(user: ClientUserDocument): Promise<RestoreUserPasswordKey>
     {
         let result: RestoreUserPasswordKey = await this.model.findOne({ user });
@@ -45,10 +61,17 @@ export class RestorePasswordKeyService
     {
         const timeLeftTillUpdate: number = this.getKeyUpdateTime(key);
 
-        if (timeLeftTillUpdate > 0)
+        if (!this.isKeyExpired(key))
         {
             throw new RestorePasswordKeyExpirationException(timeLeftTillUpdate);
         }
+    }
+
+    isKeyExpired(key: RestoreUserPasswordKey): boolean
+    {
+        const timeLeftTillUpdate: number = this.getKeyUpdateTime(key);
+
+        return (timeLeftTillUpdate < 0);
     }
 
     /**

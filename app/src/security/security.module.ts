@@ -14,9 +14,10 @@ import {PassportModule} from '@nestjs/passport';
 import {JwtModule} from '@nestjs/jwt';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {JwtStrategy} from './services/jwt.strategy';
-import {SecurityTokenService} from "./services/security-token.service";
-import {RestoreUserPasswordKey, RestoreUserPasswordKeySchema} from "./schemas/restore-user-password-key.schema";
-import {RestorePasswordKeyService} from "./services/restore-password-key.service";
+import {SecurityTokenService} from './services/security-token.service';
+import {RestoreUserPasswordKey, RestoreUserPasswordKeySchema} from './schemas/restore-user-password-key.schema';
+import {RestorePasswordKeyService} from './services/restore-password-key.service';
+import {RestorePasswordKeyValidator} from './validators/restore-password-key.validator';
 
 @Module({
     imports: [
@@ -48,12 +49,14 @@ import {RestorePasswordKeyService} from "./services/restore-password-key.service
     providers: [
         JwtStrategy,
         SecurityTokenService,
-        UniqueUserEmailValidator,
-        ConfirmationAccountKeyService,
-        UserRegisterConfirmationKeyValidator,
         MailService,
         LoginPasswordService,
-        RestorePasswordKeyService
+        RestorePasswordKeyService,
+        ConfirmationAccountKeyService,
+
+        UniqueUserEmailValidator,
+        UserRegisterConfirmationKeyValidator,
+        RestorePasswordKeyValidator,
     ],
     exports: [
         MongooseModule,

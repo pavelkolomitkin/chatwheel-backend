@@ -1,5 +1,5 @@
 import {BaseController} from './base.controller';
-import {Body, Controller, HttpCode, HttpStatus, Post, Put} from '@nestjs/common';
+import {BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put} from '@nestjs/common';
 import {LoginPasswordCredentialsDto} from '../dto/login-password-credentials.dto';
 import {LoginPasswordService} from '../services/login-password.service';
 import {LoginPasswordRegisterDto} from '../dto/login-password-register.dto';
@@ -7,13 +7,15 @@ import {ClientUserDocument} from '../../core/schemas/client-user.schema';
 import {UserConfirmRegisterDto} from '../dto/user-confirm-register.dto';
 import {SecurityTokenService} from '../services/security-token.service';
 import {RestorePasswordRequestDto} from "../dto/restore-password-request.dto";
+import {RestorePasswordKeyValidator} from "../validators/restore-password-key.validator";
 
 @Controller('login')
 export class LoginPasswordController extends BaseController
 {
     constructor(
         private readonly service: LoginPasswordService,
-        private readonly tokenService: SecurityTokenService
+        private readonly tokenService: SecurityTokenService,
+        private readonly restorePasswordKeyValidator: RestorePasswordKeyValidator
     ) {
         super();
     }
@@ -35,6 +37,17 @@ export class LoginPasswordController extends BaseController
     async restorePasswordRequest(@Body() data: RestorePasswordRequestDto)
     {
         await this.service.restorePasswordRequest(data);
+    }
+
+    @Get('restore-password-key-check/:key')
+    @HttpCode(HttpStatus.OK)
+    async restorePasswordCheckKey(@Param('key') key: string)
+    {
+        const isValid: boolean = await this.restorePasswordKeyValidator.validate(key);
+        if (!isValid)
+        {
+            throw new BadRequestException('The key is not valid', 'key');
+        }
     }
 
     @Post('register')
