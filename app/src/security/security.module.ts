@@ -18,6 +18,7 @@ import {SecurityTokenService} from './services/security-token.service';
 import {RestoreUserPasswordKey, RestoreUserPasswordKeySchema} from './schemas/restore-user-password-key.schema';
 import {RestorePasswordKeyService} from './services/restore-password-key.service';
 import {RestorePasswordKeyValidator} from './validators/restore-password-key.validator';
+import {ProfileController} from "./controllers/profile.controller";
 
 @Module({
     imports: [
@@ -44,7 +45,8 @@ import {RestorePasswordKeyValidator} from './validators/restore-password-key.val
         }),
     ],
     controllers: [
-        LoginPasswordController
+        LoginPasswordController,
+        ProfileController
     ],
     providers: [
         JwtStrategy,
