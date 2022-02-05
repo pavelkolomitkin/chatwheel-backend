@@ -8,6 +8,7 @@ import {UserConfirmRegisterDto} from '../dto/user-confirm-register.dto';
 import {SecurityTokenService} from '../services/security-token.service';
 import {RestorePasswordRequestDto} from "../dto/restore-password-request.dto";
 import {RestorePasswordKeyValidator} from "../validators/restore-password-key.validator";
+import {RestorePasswordDto} from "../dto/restore-password.dto";
 
 @Controller('login')
 export class LoginPasswordController extends BaseController
@@ -48,6 +49,13 @@ export class LoginPasswordController extends BaseController
         {
             throw new BadRequestException('The key is not valid', 'key');
         }
+    }
+
+    @Put('restore-password')
+    @HttpCode(HttpStatus.OK)
+    async restorePassword(@Body() data: RestorePasswordDto)
+    {
+        await this.service.restorePassword(data);
     }
 
     @Post('register')

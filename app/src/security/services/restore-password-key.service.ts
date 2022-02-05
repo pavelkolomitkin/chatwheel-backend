@@ -32,6 +32,17 @@ export class RestorePasswordKeyService
         return false;
     }
 
+    async getValidKey(key: string): Promise<RestoreUserPasswordKey>
+    {
+        const keyEntity: RestoreUserPasswordKey = await this.model.findOne({ key }).populate('user');
+        if (!keyEntity || this.isKeyExpired(keyEntity))
+        {
+            return null;
+        }
+
+        return keyEntity;
+    }
+
     async create(user: ClientUserDocument): Promise<RestoreUserPasswordKey>
     {
         let result: RestoreUserPasswordKey = await this.model.findOne({ user });

@@ -11,11 +11,11 @@ import {ConfirmationAccountKeyService} from './confirmation-account-key.service'
 import {MailService} from './mail.service';
 import {UserConfirmRegisterDto} from '../dto/user-confirm-register.dto';
 import {SecurityTokenService} from './security-token.service';
-import {RestorePasswordRequestDto} from "../dto/restore-password-request.dto";
-import {RestorePasswordKeyService} from "./restore-password-key.service";
-import {RestoreUserPasswordKey} from "../schemas/restore-user-password-key.schema";
-import {SecurityException} from "../exceptions/security.exception";
-import {RestorePasswordKeyExpirationException} from "../exceptions/restore-password-key-expiration.exception";
+import {RestorePasswordRequestDto} from '../dto/restore-password-request.dto';
+import {RestorePasswordKeyService} from './restore-password-key.service';
+import {RestoreUserPasswordKey} from '../schemas/restore-user-password-key.schema';
+import {RestorePasswordKeyExpirationException} from '../exceptions/restore-password-key-expiration.exception';
+import {RestorePasswordDto} from '../dto/restore-password.dto';
 
 @Injectable()
 export class LoginPasswordService extends BaseService
@@ -135,6 +135,21 @@ export class LoginPasswordService extends BaseService
         user.isActivated = true;
         await user.save();
         await key.remove();
+
+        return user;
+    }
+
+    async restorePassword(data: RestorePasswordDto): Promise<ClientUserDocument>
+    {
+        const { key, password } = data;
+
+        const keyEntity: RestoreUserPasswordKey = await this.restorePasswordKeyService.getValidKey(key);
+        const user: ClientUserDocument = keyEntity.user;
+
+        user.password = await this.getHashedPassword(password);
+        await user.save();
+
+        await keyEntity.remove();
 
         return user;
     }
