@@ -10,7 +10,7 @@ export const provider: Provider = {
     useFactory: async (config: ConfigService) => {
 
         return config.get('NODE_ENV') === 'production' ?
-            new ProdEmailService():
+            new ProdEmailService(config):
             new DevEmailService()
     }
 }

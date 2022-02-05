@@ -35,6 +35,8 @@ services:
     environment:
       NODE_ENV: 'dev'
       APP_SECRET: 'change_it'
+      EMAIL_NO_REPLY: 'noreply@localhost.ru' # NEVER COMMIT THIS STUFF!
+      EMAIL_SENDER_API_KEY: 'change_it' # NEVER COMMIT THIS STUFF!
       MONGO_CONNECTION_STRING: 'mongodb://mongodb-service:27017/chatwheel'
       MONGO_INITDB_DATABASE: 'chatwheel'
       MONGO_REPLICASET: 'rs_chatwheel'
@@ -45,12 +47,11 @@ services:
       UPLOAD_DIRECTORY: '/app/upload'
       IMAGE_THUMB_DIRECTORY: '/app/thumbs'
       MAX_UPLOAD_FILE_SIZE: '7340032' # 7M
-      RESTORE_PASSWORD_REQUEST_INTERVAL: 120 #How long should the user wait before they would have a chance to request a new password-restore key(is seconds)
+      RESTORE_PASSWORD_REQUEST_INTERVAL: 10 #How long should the user wait before they would have a chance to request a new password-restore key(is seconds)
 #      MAIL_HOST: 'smtp.localhost.ru'
 #      MAIL_PORT: 25
 #      MAIL_USER: test
 #      MAIL_PASSWORD: test
-      EMAIL_NO_REPLY: 'noreply@localhost.ru'
 #      SSL_KEY_FILE_PATH: ''
 #      SLL_CERT_FILE_PATH: ''
 

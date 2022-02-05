@@ -24,18 +24,13 @@ export class RestorePasswordKeyService
             return false;
         }
 
-        if (!this.isKeyExpired(keyEntity))
-        {
-            return true;
-        }
-
         return false;
     }
 
     async getValidKey(key: string): Promise<RestoreUserPasswordKey>
     {
         const keyEntity: RestoreUserPasswordKey = await this.model.findOne({ key }).populate('user');
-        if (!keyEntity || this.isKeyExpired(keyEntity))
+        if (!keyEntity || this.isKeyReadyToBeUpdated(keyEntity))
         {
             return null;
         }
@@ -70,15 +65,15 @@ export class RestorePasswordKeyService
 
     async handleKeyUpdatePeriod(key: RestoreUserPasswordKey): Promise<void>
     {
-        const timeLeftTillUpdate: number = this.getKeyUpdateTime(key);
-
-        if (!this.isKeyExpired(key))
+        if (!this.isKeyReadyToBeUpdated(key))
         {
+            const timeLeftTillUpdate: number = this.getKeyUpdateTime(key);
+
             throw new RestorePasswordKeyExpirationException(timeLeftTillUpdate);
         }
     }
 
-    isKeyExpired(key: RestoreUserPasswordKey): boolean
+    isKeyReadyToBeUpdated(key: RestoreUserPasswordKey): boolean
     {
         const timeLeftTillUpdate: number = this.getKeyUpdateTime(key);
 
