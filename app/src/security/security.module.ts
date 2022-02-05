@@ -15,6 +15,8 @@ import {JwtModule} from '@nestjs/jwt';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {JwtStrategy} from './services/jwt.strategy';
 import {SecurityTokenService} from "./services/security-token.service";
+import {RestoreUserPasswordKey, RestoreUserPasswordKeySchema} from "./schemas/restore-user-password-key.schema";
+import {RestorePasswordKeyService} from "./services/restore-password-key.service";
 
 @Module({
     imports: [
@@ -22,6 +24,10 @@ import {SecurityTokenService} from "./services/security-token.service";
             {
                 name: ConfirmationUserAccountKey.name,
                 schema: ConfirmationUserAccountKeySchema
+            },
+            {
+                name: RestoreUserPasswordKey.name,
+                schema: RestoreUserPasswordKeySchema
             }
         ]),
 
@@ -35,10 +41,6 @@ import {SecurityTokenService} from "./services/security-token.service";
                 }
             }
         }),
-        // JwtModule.register({
-        //     secret: process.env.APP_SECRET,
-        // }),
-
     ],
     controllers: [
         LoginPasswordController
@@ -50,7 +52,8 @@ import {SecurityTokenService} from "./services/security-token.service";
         ConfirmationAccountKeyService,
         UserRegisterConfirmationKeyValidator,
         MailService,
-        LoginPasswordService
+        LoginPasswordService,
+        RestorePasswordKeyService
     ],
     exports: [
         MongooseModule,

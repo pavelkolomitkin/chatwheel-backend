@@ -6,6 +6,7 @@ import {LoginPasswordRegisterDto} from '../dto/login-password-register.dto';
 import {ClientUserDocument} from '../../core/schemas/client-user.schema';
 import {UserConfirmRegisterDto} from '../dto/user-confirm-register.dto';
 import {SecurityTokenService} from '../services/security-token.service';
+import {RestorePasswordRequestDto} from "../dto/restore-password-request.dto";
 
 @Controller('login')
 export class LoginPasswordController extends BaseController
@@ -27,6 +28,13 @@ export class LoginPasswordController extends BaseController
         return {
             token
         };
+    }
+
+    @Post('restore-password-request')
+    @HttpCode(HttpStatus.OK)
+    async restorePasswordRequest(@Body() data: RestorePasswordRequestDto)
+    {
+        await this.service.restorePasswordRequest(data);
     }
 
     @Post('register')

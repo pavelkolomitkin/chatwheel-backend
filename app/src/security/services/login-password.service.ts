@@ -11,6 +11,11 @@ import {ConfirmationAccountKeyService} from './confirmation-account-key.service'
 import {MailService} from './mail.service';
 import {UserConfirmRegisterDto} from '../dto/user-confirm-register.dto';
 import {SecurityTokenService} from './security-token.service';
+import {RestorePasswordRequestDto} from "../dto/restore-password-request.dto";
+import {RestorePasswordKeyService} from "./restore-password-key.service";
+import {RestoreUserPasswordKey} from "../schemas/restore-user-password-key.schema";
+import {SecurityException} from "../exceptions/security.exception";
+import {RestorePasswordKeyExpirationException} from "../exceptions/restore-password-key-expiration.exception";
 
 @Injectable()
 export class LoginPasswordService extends BaseService
@@ -20,10 +25,28 @@ export class LoginPasswordService extends BaseService
         @InjectModel(ClientUser.name) private readonly userModel: Model<ClientUserDocument>,
         @InjectModel(ConfirmationUserAccountKey.name) private readonly confirmationKeyModel: Model<ConfirmationUserAccountKey>,
         private readonly confirmationKeyService: ConfirmationAccountKeyService,
+        private readonly restorePasswordKeyService: RestorePasswordKeyService,
         private readonly mailService: MailService,
         private readonly tokenService: SecurityTokenService)
     {
         super();
+    }
+
+    handleBlockedUser(user: ClientUserDocument)
+    {
+        if (user.isBlocked)
+        {
+            const blockingReasonMessage: string = `You've been blocked! ` + user.blockingReason;
+            throw new BadRequestException(blockingReasonMessage);
+        }
+    }
+
+    handleInActiveUser(user: ClientUserDocument)
+    {
+        if (!user.isActivated)
+        {
+            throw new BadRequestException('Please activate your account first with the link sent on your email!');
+        }
     }
 
     async login(credentials: LoginPasswordCredentialsDto): Promise<string>
@@ -45,18 +68,36 @@ export class LoginPasswordService extends BaseService
             throw new BadRequestException('Bad credentials!');
         }
 
-        if (user.isBlocked)
-        {
-            const blockingReasonMessage: string = `You've been blocked! ` + user.blockingReason;
-            throw new BadRequestException(blockingReasonMessage);
-        }
-
-        if (!user.isActivated)
-        {
-            throw new BadRequestException('Please activate your account first with the link sent on your email!');
-        }
+        this.handleBlockedUser(user);
+        this.handleInActiveUser(user);
 
         return this.tokenService.getUserToken(user);
+    }
+
+    async restorePasswordRequest(data: RestorePasswordRequestDto): Promise<void>
+    {
+        const { email } = data;
+
+        const user: ClientUserDocument = await this.userModel.findOne({ email });
+
+        this.handleBlockedUser(user);
+        this.handleInActiveUser(user);
+
+        try {
+            // generate a restore-password key
+            const key: RestoreUserPasswordKey = await this.restorePasswordKeyService.create(user);
+
+            // send the key via email
+            await this.mailService.sendRestorePasswordKey(key);
+        }
+        catch (error)
+        {
+            if (error instanceof RestorePasswordKeyExpirationException)
+            {
+                // get the time left
+                throw new BadRequestException({secondsLeft: error.secondsLeft})
+            }
+        }
     }
 
     async register(data: LoginPasswordRegisterDto): Promise<ClientUserDocument>

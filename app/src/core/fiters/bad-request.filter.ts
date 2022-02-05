@@ -15,8 +15,10 @@ export class BadRequestFilter implements ExceptionFilter
         const status = exception.getStatus();
 
         let errors = {};
+
+        const exceptionResponse = exception.getResponse();
         // @ts-ignore
-        const messages = exception.getResponse().message;
+        const messages = exceptionResponse.message;
         // @ts-ignore
         if (Array.isArray(messages))
         {
@@ -36,9 +38,10 @@ export class BadRequestFilter implements ExceptionFilter
                 }
             }
         }
-        else
+        else if (typeof exceptionResponse === 'object')
         {
-            errors = [exception.message];
+            // @ts-ignore
+            errors = {...exceptionResponse};
         }
 
 
