@@ -1,10 +1,12 @@
-import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import {ClientUser} from "./client-user.schema";
-import {AdminUser} from "./admin-user.schema";
-import {Exclude, Expose} from "class-transformer";
-import {createSerializer} from "../serializer/serializer";
-import {BaseSchema} from "./base.schema";
+import {ClientUser} from './client-user.schema';
+import {AdminUser} from './admin-user.schema';
+import {Exclude, Expose} from 'class-transformer';
+import {createSerializer} from '../serializer/serializer';
+import {BaseSchema} from './base.schema';
+import * as mongooseDelete from 'mongoose-delete';
+import {aggregate} from '../middlewares/soft-delete-entity.middleware';
 
 export type UserDocument = Document & User;
 
@@ -25,7 +27,7 @@ export class User extends BaseSchema {
     @Prop({
         type: MongooseSchema.Types.String,
         required: true,
-        enum: ['ClientUser', 'AdminUser']
+        enum: ['ClientUser', 'AdminUser'],
     })
     kind: string;
 
@@ -33,7 +35,7 @@ export class User extends BaseSchema {
     @Prop({
         required: false,
         unique: false,
-        default: null
+        default: null,
     })
     email: string;
 
@@ -104,6 +106,9 @@ UserSchema.virtual('roles').get(function(){
     return ['USER_ROLE'];
 });
 
-UserSchema.methods.serialize = createSerializer([User])
+UserSchema.methods.serialize = createSerializer([User]);
+
+UserSchema.plugin(mongooseDelete, { deletedAt : true, overrideMethods: 'all' });
+UserSchema.pre('aggregate', aggregate);
 
 export {UserSchema};
