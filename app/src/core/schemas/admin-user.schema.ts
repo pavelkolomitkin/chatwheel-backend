@@ -1,15 +1,30 @@
 import {User} from "./user.schema";
 import {Schema, SchemaFactory} from "@nestjs/mongoose";
+import {Exclude, Expose} from "class-transformer";
+import {createSerializer} from "../serializer/serializer";
 
 export type AdminUserDocument = User & AdminUser
 
-@Schema()
+@Exclude()
+@Schema({
+    toObject: {
+        virtuals: true
+    },
+    toJSON: {
+        virtuals: true
+    }
+})
 export class AdminUser
 {
-    getRoles(): string[]
-    {
-        return ['ADMIN_ROLE'];
-    }
+
 }
 
-export const AdminUserSchema = SchemaFactory.createForClass(AdminUser);
+const AdminUserSchema = SchemaFactory.createForClass(AdminUser);
+
+AdminUserSchema.virtual('roles').get(function(){
+    return ['ADMIN_ROLE'];
+});
+
+AdminUserSchema.methods.serialize = createSerializer([User, AdminUser]);
+
+export { AdminUserSchema };

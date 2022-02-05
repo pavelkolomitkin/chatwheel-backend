@@ -1,4 +1,4 @@
-import {Controller, Get, UseGuards} from '@nestjs/common';
+import {Controller, Get, UseGuards, UseInterceptors} from '@nestjs/common';
 import {CurrentUser} from '../../core/decorators/user.decorator';
 import {User} from '../../core/schemas/user.schema';
 import {BaseController} from './base.controller';
@@ -11,8 +11,11 @@ export class ProfileController extends BaseController
     @Get('/')
     get(@CurrentUser() user: User)
     {
+        // @ts-ignore
+        const data = user.serialize();
+
         return {
-            user
-        }
+            user: data
+        };
     }
 }

@@ -48,7 +48,7 @@ import { provider as EmailServiceProvider } from './providers/email-service.prov
         },
         {
             provide: APP_INTERCEPTOR,
-            useClass: ClassSerializerInterceptor,
+            useClass: ClassSerializerInterceptor
         },
         EmailServiceProvider,
         EntityExistsValidator

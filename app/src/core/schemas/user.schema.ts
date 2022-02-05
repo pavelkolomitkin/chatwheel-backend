@@ -2,13 +2,25 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import {ClientUser} from "./client-user.schema";
 import {AdminUser} from "./admin-user.schema";
+import {Exclude, Expose} from "class-transformer";
+import {createSerializer} from "../serializer/serializer";
+import {BaseSchema} from "./base.schema";
 
+export type UserDocument = Document & User;
 
+@Exclude()
 @Schema({
     timestamps: true,
-    discriminatorKey: 'kind'
+    discriminatorKey: 'kind',
+    toObject: {
+        virtuals: true
+    },
+    toJSON: {
+        virtuals: true
+    },
+    id: true
 })
-export class User extends Document {
+export class User extends BaseSchema {
 
     @Prop({
         type: MongooseSchema.Types.String,
@@ -17,6 +29,7 @@ export class User extends Document {
     })
     kind: string;
 
+    @Expose({ groups: ['mine', 'admin'] })
     @Prop({
         required: false,
         unique: false,
@@ -30,23 +43,30 @@ export class User extends Document {
     })
     password: string;
 
+    @Expose()
     @Prop({
         required: true,
         maxlength: 255
     })
     fullName: string;
 
+    @Expose()
+    roles: string;
+
+    @Expose()
     @Prop({
         type: {},
         default: null
     })
     avatar: {};
-    
+
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.Date,
     })
     lastActivity: Date;
 
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.Boolean,
         default: false
@@ -59,11 +79,6 @@ export class User extends Document {
         required: false
     })
     blockingReason: string;
-
-    getRoles(): string[]
-    {
-        return ['USER_ROLE'];
-    }
 
     setAvatar(file = null) {
 
@@ -86,7 +101,9 @@ export class User extends Document {
 const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.virtual('roles').get(function(){
-    return this.getRoles();
+    return ['USER_ROLE'];
 });
+
+UserSchema.methods.serialize = createSerializer([User])
 
 export {UserSchema};
