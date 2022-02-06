@@ -22,7 +22,7 @@ export class AdminUser
 const AdminUserSchema = SchemaFactory.createForClass(AdminUser);
 
 AdminUserSchema.virtual('roles').get(function(){
-    return ['ADMIN_ROLE'];
+    return ['ROLE_ADMIN_USER'];
 });
 
 AdminUserSchema.methods.serialize = createSerializer([User, AdminUser]);

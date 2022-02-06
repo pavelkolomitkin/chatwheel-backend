@@ -26,7 +26,7 @@ export class ClientUser
 const ClientUserSchema = SchemaFactory.createForClass(ClientUser);
 
 ClientUserSchema.virtual('roles').get(function(){
-    return ['CLIENT_ROLE'];
+    return ['ROLE_CLIENT_USER'];
 });
 
 ClientUserSchema.methods.serialize = createSerializer([User, ClientUser]);

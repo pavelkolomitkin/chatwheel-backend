@@ -103,7 +103,7 @@ export class User extends BaseSchema {
 const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.virtual('roles').get(function(){
-    return ['USER_ROLE'];
+    return ['ROLE_USER'];
 });
 
 UserSchema.methods.serialize = createSerializer([User]);
