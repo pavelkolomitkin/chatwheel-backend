@@ -9,6 +9,14 @@ import {ClientUser, ClientUserSchema} from "./schemas/client-user.schema";
 import {AdminUser, AdminUserSchema} from "./schemas/admin-user.schema";
 import {EntityExistsValidator} from "./validators/entity-exists.validator";
 import { provider as EmailServiceProvider } from './providers/email-service.provider';
+import {GeoPoint, GeoPointSchema} from "./schemas/geo/geo-point.schema";
+import {AbuseReport, AbuseReportSchema} from "./schemas/abuse-report.schema";
+import {BannedUser} from "./schemas/banned-user.schema";
+import {Country, CountrySchema} from "./schemas/country.schema";
+import {Currency, CurrencySchema} from "./schemas/currency.schema";
+import {Language, LanguageSchema} from "./schemas/language.schema";
+import {Region, RegionSchema} from "./schemas/region.schema";
+import {UserInterest, UserInterestSchema} from "./schemas/user-interest.schema";
 
 @Global()
 @Module({
@@ -33,6 +41,38 @@ import { provider as EmailServiceProvider } from './providers/email-service.prov
                     { name: ClientUser.name, schema: ClientUserSchema},
                     { name: AdminUser.name, schema: AdminUserSchema}
                 ]
+            },
+            {
+                name: GeoPoint.name,
+                schema: GeoPointSchema
+            },
+            {
+                name: AbuseReport.name,
+                schema: AbuseReportSchema
+            },
+            {
+                name: BannedUser.name,
+                schema: AbuseReportSchema
+            },
+            {
+                name: Country.name,
+                schema: CountrySchema
+            },
+            {
+                name: Currency.name,
+                schema: CurrencySchema
+            },
+            {
+                name: Language.name,
+                schema: LanguageSchema
+            },
+            {
+                name: Region.name,
+                schema: RegionSchema
+            },
+            {
+                name: UserInterest.name,
+                schema: UserInterestSchema
             }
         ])
 
