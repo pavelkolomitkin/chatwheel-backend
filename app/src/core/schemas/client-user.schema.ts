@@ -48,7 +48,6 @@ export class ClientUser
     @Prop({
         type: GeoPointSchema,
         required: false,
-        //index: '2dsphere' // TODO move this to a migration
     })
     geoLocation: GeoPointDocument;
 
