@@ -9,6 +9,7 @@ import {SecurityTokenService} from '../services/security-token.service';
 import {RestorePasswordRequestDto} from "../dto/restore-password-request.dto";
 import {RestorePasswordKeyValidator} from "../validators/restore-password-key.validator";
 import {RestorePasswordDto} from "../dto/restore-password.dto";
+import {ConfigService} from "@nestjs/config";
 
 @Controller('login')
 export class LoginPasswordController extends BaseController
@@ -16,7 +17,8 @@ export class LoginPasswordController extends BaseController
     constructor(
         private readonly service: LoginPasswordService,
         private readonly tokenService: SecurityTokenService,
-        private readonly restorePasswordKeyValidator: RestorePasswordKeyValidator
+        private readonly restorePasswordKeyValidator: RestorePasswordKeyValidator,
+        private readonly configService: ConfigService
     ) {
         super();
     }
@@ -38,6 +40,11 @@ export class LoginPasswordController extends BaseController
     async restorePasswordRequest(@Body() data: RestorePasswordRequestDto)
     {
         await this.service.restorePasswordRequest(data);
+
+        const secondsLeft = +this.configService.get('RESTORE_PASSWORD_REQUEST_INTERVAL');
+        return {
+            secondsLeft
+        }
     }
 
     @Get('restore-password-key-check/:key')
