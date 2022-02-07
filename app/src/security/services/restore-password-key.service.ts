@@ -24,13 +24,13 @@ export class RestorePasswordKeyService
             return false;
         }
 
-        return false;
+        return true;
     }
 
     async getValidKey(key: string): Promise<RestoreUserPasswordKey>
     {
-        const keyEntity: RestoreUserPasswordKey = await this.model.findOne({ key }).populate('user');
-        if (!keyEntity || this.isKeyReadyToBeUpdated(keyEntity))
+        const keyEntity: RestoreUserPasswordKey = await this.model.findOne({ key });
+        if (!keyEntity)
         {
             return null;
         }
