@@ -1,13 +1,21 @@
 
 export const config = {
     avatar: {
+        extraSmall: {
+            width: 30,
+            height: 30
+        },
         small: {
-            width: 50,
-            height: 50
+            width: 40,
+            height: 40
         },
         medium: {
-            width: 100,
-            height: 100
+            width: 150,
+            height: 150
         },
+        // large: {
+        //     width: 150,
+        //     height: 150
+        // },
     }
 };
