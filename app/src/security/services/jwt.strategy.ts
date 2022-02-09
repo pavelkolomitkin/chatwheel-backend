@@ -6,7 +6,7 @@ import {ClientUser, ClientUserDocument} from '../../core/schemas/client-user.sch
 import {LoginPasswordService} from './login-password.service';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model} from 'mongoose';
-import {User} from "../../core/schemas/user.schema";
+import {ROLE_CLIENT_USER, User, UserDocument} from "../../core/schemas/user.schema";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy)
@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
     async validate({ id })
     {
-        const user: ClientUserDocument = await this
+        const user: UserDocument = await this
             .userModel
             .findOne({
                 id,
@@ -34,6 +34,17 @@ export class JwtStrategy extends PassportStrategy(Strategy)
         if (!user)
         {
             throw new UnauthorizedException();
+        }
+
+        if (user.roles.includes(ROLE_CLIENT_USER))
+        {
+            if (user.roles.includes(ROLE_CLIENT_USER))
+            {
+                await user
+                    .populate('residenceCountry searchCountry interests')
+
+                ;
+            }
         }
 
         await this.userService.updateLastActivity(user);

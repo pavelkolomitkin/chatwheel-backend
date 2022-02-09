@@ -10,6 +10,10 @@ import {aggregate} from '../middlewares/soft-delete-entity.middleware';
 
 export type UserDocument = Document & User;
 
+export const ROLE_USER = 'ROLE_USER';
+export const ROLE_CLIENT_USER = 'ROLE_CLIENT_USER';
+export const ROLE_ADMIN_USER = 'ROLE_ADMIN_USER';
+
 @Exclude()
 @Schema({
     timestamps: true,
@@ -86,7 +90,7 @@ export class User extends BaseSchema {
 const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.virtual('roles').get(function(){
-    return ['ROLE_USER'];
+    return [ROLE_USER];
 });
 
 UserSchema.methods.setAvatar = function(file = null) {

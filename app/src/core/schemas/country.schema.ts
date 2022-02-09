@@ -1,22 +1,28 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Schema as MongooseSchema} from "mongoose";
-import {RegionDocument} from "./region.schema";
+import {Region, RegionDocument} from "./region.schema";
 import {CurrencyDocument} from "./currency.schema";
 import {LanguageDocument} from "./language.schema";
 import {createSerializer} from "../serializer/serializer";
-import {Exclude, Expose} from "class-transformer";
+import {Exclude, Expose, Type} from "class-transformer";
 import * as autoPopulate from "mongoose-autopopulate";
 
 export type CountryDocument = Country & Document;
 
 @Exclude()
 @Schema({
+    toObject: {
+        virtuals: true
+    },
+    toJSON: {
+        virtuals: true
+    },
     id: true
 })
 export class Country
 {
-    @Expose()
-    id: string;
+    @Expose({ name: 'id' })
+    id: any;
 
     @Expose()
     @Prop()
@@ -38,12 +44,15 @@ export class Country
     })
     region: RegionDocument;
 
+    @Exclude()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Currency',
+        autopopulate: true
     })
     currency: CurrencyDocument;
 
+    @Exclude()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Language',

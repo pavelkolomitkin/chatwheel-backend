@@ -1,4 +1,4 @@
-import {Body, Controller, HttpCode, HttpStatus, Put, UseGuards, ValidationPipe} from "@nestjs/common";
+import {Body, Controller, HttpCode, HttpStatus, Put, UseGuards} from "@nestjs/common";
 import {UserFullnameDto} from "../dto/user-fullname.dto";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUserDocument} from "../../core/schemas/client-user.schema";
@@ -7,9 +7,10 @@ import {UserAboutDto} from "../dto/user-about.dto";
 import {UserInterestDto} from "../dto/user-interest.dto";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
 import {UserInterestDocument} from "../../core/schemas/user-interest.schema";
-import {CountryDocument} from "../../core/schemas/country.schema";
+import {Country, CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
 import {AuthGuard} from "@nestjs/passport";
+import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
 
 @Controller('profile')
 @UseGuards(AuthGuard('jwt'))
@@ -64,26 +65,51 @@ export class ProfileController
     )
     {
         await this.service.removeInterest(interest, user);
+
+        return {
+            // @ts-ignore
+            interest: interest.serialize()
+        };
     }
 
     @Put('update-residence-country')
     @HttpCode(HttpStatus.OK)
     async updateResidenceCountry(
-        @Body('id', ParameterConverterPipe) country: CountryDocument,
+        // @Body('id', ParameterConverterPipe) country: CountryDocument,
+        @ParameterConverter({
+            model: Country.name,
+            field: 'id',
+            sourceType: ParameterConverterSourceType.BODY
+        }, ParameterConverterPipe) country: CountryDocument,
         @CurrentUser() user: ClientUserDocument
     )
     {
+        //debugger
         await this.service.updateResidenceCountry(country, user);
+
+        return {
+            // @ts-ignore
+            user: user.serialize(['mine'])
+        }
     }
 
     @Put('update-search-country')
     @HttpCode(HttpStatus.OK)
     async updateSearchCountry(
-        @Body('id', ParameterConverterPipe) country: CountryDocument,
+        @ParameterConverter({
+            model: Country.name,
+            field: 'id',
+            sourceType: ParameterConverterSourceType.BODY
+        }, ParameterConverterPipe) country: CountryDocument,
         @CurrentUser() user: ClientUserDocument
     )
     {
         await this.service.updateSearchCountry(country, user);
+
+        return {
+            // @ts-ignore
+            user: user.serialize(['mine'])
+        }
     }
 
     @Put('update-location')
@@ -91,6 +117,11 @@ export class ProfileController
     async updateGeoLocation(@Body() location: GeoLocationDto, @CurrentUser() user: ClientUserDocument)
     {
         await this.service.updateLocation(user, location);
+
+        return {
+            // @ts-ignore
+            user: user.serialize(['mine'])
+        }
     }
 
     @Put('remove-location')
@@ -98,5 +129,10 @@ export class ProfileController
     async removeLocation(@CurrentUser() user: ClientUserDocument)
     {
         await this.service.updateLocation(user);
+
+        return {
+            // @ts-ignore
+            user: user.serialize(['mine'])
+        }
     }
 }

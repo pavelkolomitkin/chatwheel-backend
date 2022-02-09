@@ -1,11 +1,12 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import {User, UserDocument} from './user.schema';
-import {Exclude, Expose} from 'class-transformer';
+import {ROLE_CLIENT_USER, User, UserDocument} from './user.schema';
+import {Exclude, Expose, Type} from 'class-transformer';
 import {createSerializer} from "../serializer/serializer";
 import {Schema as MongooseSchema} from "mongoose";
-import {CountryDocument} from "./country.schema";
+import {Country, CountryDocument, CountrySchema} from "./country.schema";
 import {UserInterestDocument} from "./user-interest.schema";
 import {GeoPointDocument, GeoPointSchema} from "./geo/geo-point.schema";
+import * as autoPopulate from "mongoose-autopopulate";
 
 export type ClientUserDocument = UserDocument & ClientUser;
 
@@ -26,21 +27,24 @@ export class ClientUser
     })
     isActivated: boolean;
 
-    @Expose()
+    @Type(() => Country)
+    @Expose({ groups:  ['mine', 'admin'] })
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Country',
         required: false,
-        default: null
+        default: null,
+        autopopulate: true
     })
     residenceCountry: CountryDocument;
 
-    @Expose()
+    @Expose({ groups:  ['mine', 'admin'] })
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Country',
         required: false,
-        default: null
+        default: null,
+        autopopulate: true
     })
     searchCountry: CountryDocument;
 
@@ -51,6 +55,7 @@ export class ClientUser
     })
     geoLocation: GeoPointDocument;
 
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.String,
         required: false,
@@ -68,9 +73,11 @@ export class ClientUser
 const ClientUserSchema = SchemaFactory.createForClass(ClientUser);
 
 ClientUserSchema.virtual('roles').get(function(){
-    return ['ROLE_CLIENT_USER'];
+    return [ROLE_CLIENT_USER];
 });
 
 ClientUserSchema.methods.serialize = createSerializer([User, ClientUser]);
+// @ts-ignore
+ClientUserSchema.plugin(autoPopulate);
 
 export { ClientUserSchema };

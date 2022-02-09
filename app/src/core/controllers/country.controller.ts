@@ -5,7 +5,6 @@ import {Model} from "mongoose";
 import {AuthGuard} from "@nestjs/passport";
 
 @Controller('country')
-@UseGuards(AuthGuard())
 export class CountryController
 {
     constructor(
@@ -16,7 +15,7 @@ export class CountryController
     @Get('list')
     async getList()
     {
-        const list: CountryDocument[] = await this.model.find({});
+        const list: CountryDocument[] = await this.model.find({}).sort( { 'name': 1 });
 
         return {
             // @ts-ignore

@@ -92,6 +92,7 @@ export class ProfileService
 
     async updateResidenceCountry(country: CountryDocument, user: ClientUserDocument): Promise<ClientUserDocument>
     {
+        debugger
         user.residenceCountry = country;
 
         await user.save();

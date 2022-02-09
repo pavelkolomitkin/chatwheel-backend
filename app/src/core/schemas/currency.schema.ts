@@ -5,6 +5,12 @@ import {createSerializer} from "../serializer/serializer";
 export type CurrencyDocument = Currency & Document;
 
 @Schema({
+    toObject: {
+        virtuals: true
+    },
+    toJSON: {
+        virtuals: true
+    },
     id: true
 })
 export class Currency
