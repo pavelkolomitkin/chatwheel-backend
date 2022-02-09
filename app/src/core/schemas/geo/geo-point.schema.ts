@@ -1,8 +1,10 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Document, Schema as MongooseSchema} from "mongoose";
+import {Expose} from "class-transformer";
 
 export type GeoPointDocument = GeoPoint & Document;
 
+@Expose()
 @Schema({
     id: false,
 })

@@ -2,7 +2,7 @@ module.exports = {
   async up(db, client) {
 
     await db.collection('users').createIndex({geoLocation: '2dsphere'});
-    await db.collection('userinterests').createIndex({name: 1});
+    await db.collection('userinterests').createIndex({name: 1}, { unique: true });
 
   },
 

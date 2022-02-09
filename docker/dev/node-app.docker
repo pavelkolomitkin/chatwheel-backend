@@ -1,6 +1,7 @@
 FROM node:16.13.2-stretch
 
 #RUN apt-get update && apt-get install -y procps
+RUN npm install -g sharp@0.30.0
 
 RUN npm install -g typescript \
     && npm i -g @nestjs/cli

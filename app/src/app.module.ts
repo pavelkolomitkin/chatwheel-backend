@@ -18,12 +18,14 @@ import { ClientModule } from './client/client.module';
         module: SecurityModule
       },
       {
+        path: 'core',
+        module: CoreModule
+      },
+      {
         path: 'client',
         module: ClientModule
       }
     ]),
-
-
   ],
   controllers: [AppController],
   providers: [AppService],

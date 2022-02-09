@@ -17,12 +17,19 @@ import {Currency, CurrencySchema} from "./schemas/currency.schema";
 import {Language, LanguageSchema} from "./schemas/language.schema";
 import {Region, RegionSchema} from "./schemas/region.schema";
 import {UserInterest, UserInterestSchema} from "./schemas/user-interest.schema";
+import {MulterModule} from "@nestjs/platform-express";
+import customConfig from './config/index';
+import {CountryController} from "./controllers/country.controller";
+import {AvatarController} from "./controllers/avatar.controller";
+import {ImageThumbService} from "./services/image-thumb.service";
+import {UploadManagerService} from "./services/upload-manager.service";
 
 @Global()
 @Module({
     imports: [
         ConfigModule.forRoot({
-            isGlobal: true
+            isGlobal: true,
+            load: [customConfig]
         }),
         MongooseModule.forRootAsync({
             imports: [ConfigModule],
@@ -74,8 +81,20 @@ import {UserInterest, UserInterestSchema} from "./schemas/user-interest.schema";
                 name: UserInterest.name,
                 schema: UserInterestSchema
             }
-        ])
+        ]),
 
+        MulterModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: async (config: ConfigService) => {
+                return {
+                    dest: config.get('UPLOAD_DIRECTORY'),
+                    limits: {
+                        fileSize: +config.get('MAX_UPLOAD_FILE_SIZE'),
+                    }
+                }
+            }
+        })
     ],
     providers: [
         {
@@ -91,7 +110,13 @@ import {UserInterest, UserInterestSchema} from "./schemas/user-interest.schema";
             useClass: ClassSerializerInterceptor
         },
         EmailServiceProvider,
-        EntityExistsValidator
+        EntityExistsValidator,
+        ImageThumbService,
+        UploadManagerService,
+    ],
+    controllers: [
+        CountryController,
+        AvatarController
     ],
     exports: [
         MongooseModule,

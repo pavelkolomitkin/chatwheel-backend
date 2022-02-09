@@ -10,7 +10,9 @@ export class ParameterConverterPipe implements PipeTransform
     }
     //constructor(private modelName: string, private fieldName: string) {}
 
-    async transform(value: string, metadata: ArgumentMetadata): Promise<any> {
+    async transform(value: string, metadata: ArgumentMetadata): Promise<any>
+    {
+        debugger
 
         /*
         if (this.fieldName == 'id')

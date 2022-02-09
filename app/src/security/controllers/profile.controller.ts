@@ -12,7 +12,7 @@ export class ProfileController extends BaseController
     get(@CurrentUser() user: User)
     {
         // @ts-ignore
-        const data = user.serialize();
+        const data = user.serialize(['mine']);
 
         return {
             user: data

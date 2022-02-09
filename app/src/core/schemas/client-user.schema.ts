@@ -51,6 +51,13 @@ export class ClientUser
     })
     geoLocation: GeoPointDocument;
 
+    @Prop({
+        type: MongooseSchema.Types.String,
+        required: false,
+        maxlength: 1000
+    })
+    about: string;
+
     @Expose()
     @Prop({
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'UserInterest' }],

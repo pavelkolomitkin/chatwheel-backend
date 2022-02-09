@@ -4,26 +4,37 @@ import {RegionDocument} from "./region.schema";
 import {CurrencyDocument} from "./currency.schema";
 import {LanguageDocument} from "./language.schema";
 import {createSerializer} from "../serializer/serializer";
+import {Exclude, Expose} from "class-transformer";
+import * as autoPopulate from "mongoose-autopopulate";
 
 export type CountryDocument = Country & Document;
 
+@Exclude()
 @Schema({
     id: true
 })
 export class Country
 {
+    @Expose()
+    id: string;
+
+    @Expose()
     @Prop()
     name: string;
 
+    @Expose()
     @Prop()
     code: string;
 
+    @Expose()
     @Prop()
     capital: string
 
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Region',
+        autopopulate: true
     })
     region: RegionDocument;
 
@@ -46,5 +57,8 @@ export class Country
 const CountrySchema = SchemaFactory.createForClass(Country);
 
 CountrySchema.methods.serialize = createSerializer([Country]);
+
+// @ts-ignore
+CountrySchema.plugin(autoPopulate);
 
 export { CountrySchema };

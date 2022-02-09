@@ -81,23 +81,6 @@ export class User extends BaseSchema {
         required: false
     })
     blockingReason: string;
-
-    setAvatar(file = null) {
-
-        if (!file)
-        {
-            this.avatar = null;
-            return;
-        }
-
-        this.avatar = {
-            encoding: file.encoding,
-            mimetype: file.mimetype,
-            originalname: file.originalname,
-            size: file.size,
-            filename: file.filename
-        };
-    }
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
@@ -106,6 +89,22 @@ UserSchema.virtual('roles').get(function(){
     return ['ROLE_USER'];
 });
 
+UserSchema.methods.setAvatar = function(file = null) {
+
+    if (!file)
+    {
+        this.avatar = null;
+        return;
+    }
+
+    this.avatar = {
+        encoding: file.encoding,
+        mimetype: file.mimetype,
+        originalname: file.originalname,
+        size: file.size,
+        filename: file.filename
+    };
+};
 UserSchema.methods.serialize = createSerializer([User]);
 
 UserSchema.plugin(mongooseDelete, { deletedAt : true, overrideMethods: 'all' });
