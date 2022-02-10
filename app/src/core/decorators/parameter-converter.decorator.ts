@@ -15,30 +15,31 @@ export interface ParameterConverterData
 
 export const ParameterConverter = createParamDecorator((data: {
     model: string,
+    paramName: string,
     field: string,
     sourceType: ParameterConverterSourceType
 }, context: ExecutionContext): ParameterConverterData => {
 
     //debugger
     const request: any = context.switchToHttp().getRequest();
-    const { model, field, sourceType } = data;
+    const { model, field, paramName, sourceType } = data;
 
     let paramValue: any = null;
 
     switch (sourceType)
     {
         case ParameterConverterSourceType.BODY:
-            paramValue = request.body[field];
+            paramValue = request.body[paramName];
 
             break;
 
         case ParameterConverterSourceType.PARAM:
-            paramValue = request.params[field]
+            paramValue = request.params[paramName]
 
             break;
 
         case ParameterConverterSourceType.QUERY:
-            paramValue = request.query[field];
+            paramValue = request.query[paramName];
 
             break;
 

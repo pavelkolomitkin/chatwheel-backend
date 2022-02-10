@@ -15,6 +15,7 @@ export class ImageThumbService
 
     async getUserAvatar(user: UserDocument, size: string): Promise<string>
     {
+        debugger
         if (!user.avatar)
         {
             throw new CoreException('User has not avatar!');
@@ -38,7 +39,7 @@ export class ImageThumbService
         }
 
         // @ts-ignore
-        const directoryPath = this.config.get('IMAGE_THUMB_DIRECTORY') + '/avatar/' + user.id + '/' + user.avatar.filename;
+        const directoryPath = this.config.get('IMAGE_THUMB_DIRECTORY') + '/avatar/' + user.id.toString() + '/' + user.avatar.filename;
         try {
             await fileExistsAsync(directoryPath);
         }
@@ -79,7 +80,7 @@ export class ImageThumbService
 
     async removeUserAvatar(user: UserDocument)
     {
-        const directoryPath = this.config.get('IMAGE_THUMB_DIRECTORY') + '/avatar/' + user.id;
+        const directoryPath = this.config.get('IMAGE_THUMB_DIRECTORY') + '/avatar/' + user.id.toString();
         try {
             await fileExistsAsync(directoryPath);
             await fsx.remove(directoryPath);

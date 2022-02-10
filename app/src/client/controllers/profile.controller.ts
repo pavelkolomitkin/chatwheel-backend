@@ -79,6 +79,7 @@ export class ProfileController
         @ParameterConverter({
             model: Country.name,
             field: 'id',
+            paramName: 'id',
             sourceType: ParameterConverterSourceType.BODY
         }, ParameterConverterPipe) country: CountryDocument,
         @CurrentUser() user: ClientUserDocument
@@ -99,6 +100,7 @@ export class ProfileController
         @ParameterConverter({
             model: Country.name,
             field: 'id',
+            paramName: 'id',
             sourceType: ParameterConverterSourceType.BODY
         }, ParameterConverterPipe) country: CountryDocument,
         @CurrentUser() user: ClientUserDocument

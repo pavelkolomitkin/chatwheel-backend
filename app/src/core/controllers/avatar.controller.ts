@@ -76,7 +76,8 @@ export class AvatarController
     async get(
         @ParameterConverter({
             model: User.name,
-            field: 'userId',
+            field: 'id',
+            paramName: 'userId',
             sourceType: ParameterConverterSourceType.PARAM
         }, ParameterConverterPipe) user: UserDocument,
         @Param('size') size: string,

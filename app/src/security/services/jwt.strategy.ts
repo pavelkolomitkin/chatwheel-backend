@@ -7,6 +7,7 @@ import {LoginPasswordService} from './login-password.service';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model} from 'mongoose';
 import {ROLE_CLIENT_USER, User, UserDocument} from "../../core/schemas/user.schema";
+import * as Mongoose from "mongoose";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy)
@@ -24,10 +25,11 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
     async validate({ id })
     {
+        debugger
         const user: UserDocument = await this
             .userModel
             .findOne({
-                id,
+                _id: new Mongoose.Types.ObjectId(id),
                 isActivated: true,
                 isBlocked: false
             });

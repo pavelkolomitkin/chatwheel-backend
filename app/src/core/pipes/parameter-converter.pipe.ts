@@ -2,6 +2,7 @@ import {ArgumentMetadata, Inject, Injectable, NotFoundException, PipeTransform} 
 import {InjectConnection} from "@nestjs/mongoose";
 import {Connection} from "mongoose";
 import {ParameterConverterData} from "../decorators/parameter-converter.decorator";
+import * as Mongoose from "mongoose";
 
 @Injectable()
 export class ParameterConverterPipe implements PipeTransform
@@ -12,12 +13,13 @@ export class ParameterConverterPipe implements PipeTransform
     async transform(value: ParameterConverterData, metadata: ArgumentMetadata): Promise<any>
     {
 
-        const paramValue = value.value;
+        let paramValue = value.value;
         let { model, field } = value;
 
         if (field == 'id')
         {
             field = '_id';
+            paramValue = new Mongoose.Types.ObjectId(paramValue);
         }
 
         const query = {};
