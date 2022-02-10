@@ -13,11 +13,12 @@ import {
 import {ImageThumbService} from "../services/image-thumb.service";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {CurrentUser} from "../decorators/user.decorator";
-import {UserDocument} from "../schemas/user.schema";
+import {User, UserDocument} from "../schemas/user.schema";
 import {UploadManagerService} from "../services/upload-manager.service";
 import {ParameterConverterPipe} from "../pipes/parameter-converter.pipe";
 import {Response} from 'express';
 import {AuthGuard} from "@nestjs/passport";
+import {ParameterConverter, ParameterConverterSourceType} from "../decorators/parameter-converter.decorator";
 
 @Controller('user/avatar')
 export class AvatarController
@@ -29,7 +30,7 @@ export class AvatarController
     }
 
     @Post('upload')
-    @UseGuards(AuthGuard())
+    @UseGuards(AuthGuard('jwt'))
     @UseInterceptors(FileInterceptor('image'))
     async upload(@UploadedFile() file, @CurrentUser() user: UserDocument)
     {
@@ -51,7 +52,7 @@ export class AvatarController
     }
 
     @Put('remove')
-    @UseGuards(AuthGuard())
+    @UseGuards(AuthGuard('jwt'))
     async remove(@CurrentUser() user: UserDocument)
     {
         try {
@@ -73,7 +74,11 @@ export class AvatarController
 
     @Get(':userId/:pictureId/:size')
     async get(
-        @Param('userId', ParameterConverterPipe) user: UserDocument,
+        @ParameterConverter({
+            model: User.name,
+            field: 'userId',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) user: UserDocument,
         @Param('size') size: string,
         @Res() response: Response
     )

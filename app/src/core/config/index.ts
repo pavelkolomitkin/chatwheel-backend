@@ -4,7 +4,7 @@ export default () => (
     {
         thumbs: thumbs,
         getAvatarThumb: (userId, fileName, size) => {
-            return '/api/user/avatar/' + userId + '/' + fileName + '/' + size;
+            return '/core/user/avatar/' + userId + '/' + fileName + '/' + size;
         }
     }
 );

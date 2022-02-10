@@ -22,6 +22,7 @@ export const createSerializer = (modelClasses: any[], afterSerializeHook: Functi
             result = { ...result, ...serialize.call(this, modelClass, groups) };
         }
 
+
         if (afterSerializeHook)
         {
             afterSerializeHook(result);

@@ -7,6 +7,7 @@ import {Country, CountryDocument, CountrySchema} from "./country.schema";
 import {UserInterestDocument} from "./user-interest.schema";
 import {GeoPointDocument, GeoPointSchema} from "./geo/geo-point.schema";
 import * as autoPopulate from "mongoose-autopopulate";
+import {userAvatarThumbsHook} from "../models/serialization/hooks/user.hooks";
 
 export type ClientUserDocument = UserDocument & ClientUser;
 
@@ -76,7 +77,7 @@ ClientUserSchema.virtual('roles').get(function(){
     return [ROLE_CLIENT_USER];
 });
 
-ClientUserSchema.methods.serialize = createSerializer([User, ClientUser]);
+ClientUserSchema.methods.serialize = createSerializer([User, ClientUser], userAvatarThumbsHook);
 // @ts-ignore
 ClientUserSchema.plugin(autoPopulate);
 

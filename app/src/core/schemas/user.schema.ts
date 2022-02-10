@@ -7,7 +7,6 @@ import {createSerializer} from '../serializer/serializer';
 import {BaseSchema} from './base.schema';
 import * as mongooseDelete from 'mongoose-delete';
 import {aggregate} from '../middlewares/soft-delete-entity.middleware';
-import config from '../config/index';
 
 export type UserDocument = Document & User;
 
@@ -110,26 +109,7 @@ UserSchema.methods.setAvatar = function(file = null) {
         filename: file.filename
     };
 };
-UserSchema.methods.serialize = createSerializer([User],
-    (data: any) => {
-        if (!data.avatar)
-        {
-            return;
-        }
-
-        const avatarThumbs: any = config().thumbs.avatar;
-        const avatarThumbProvider = config().getAvatarThumb;
-
-        data.avatarThumbs = {};
-
-        const id: string = data.id.toString();
-        const fileName = data.avatar.filename;
-
-        for (const size of Object.keys(avatarThumbs))
-        {
-            data.avatarThumbs[size] = avatarThumbProvider(id, fileName, size);
-        }
-    });
+UserSchema.methods.serialize = createSerializer([User]);
 
 UserSchema.plugin(mongooseDelete, { deletedAt : true, overrideMethods: 'all' });
 UserSchema.pre('aggregate', aggregate);
