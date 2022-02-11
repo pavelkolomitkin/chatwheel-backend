@@ -6,7 +6,7 @@ import {ProfileService} from "../services/profile.service";
 import {UserAboutDto} from "../dto/user-about.dto";
 import {UserInterestDto} from "../dto/user-interest.dto";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
-import {UserInterestDocument} from "../../core/schemas/user-interest.schema";
+import {UserInterest, UserInterestDocument} from "../../core/schemas/user-interest.schema";
 import {Country, CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
 import {AuthGuard} from "@nestjs/passport";
@@ -60,7 +60,12 @@ export class ProfileController
     @Put('remove-interest')
     @HttpCode(HttpStatus.OK)
     async removeInterest(
-        @Body('id', ParameterConverterPipe) interest: UserInterestDocument,
+        @ParameterConverter({
+            model: UserInterest.name,
+            field: 'name',
+            paramName: 'name',
+            sourceType: ParameterConverterSourceType.BODY
+        }, ParameterConverterPipe) interest: UserInterestDocument,
         @CurrentUser() user: ClientUserDocument
     )
     {

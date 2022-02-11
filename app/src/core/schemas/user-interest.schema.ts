@@ -6,7 +6,13 @@ export type UserInterestDocument = UserInterest & Document;
 
 @Schema({
     timestamps: true,
-    id: true
+    id: true,
+    toObject: {
+        virtuals: true
+    },
+    toJSON: {
+        virtuals: true
+    },
 })
 export class UserInterest extends BaseSchema
 {

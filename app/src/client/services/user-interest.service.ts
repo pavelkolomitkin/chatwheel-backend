@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable} from "@nestjs/common";
+import {BadRequestException, Injectable, InternalServerErrorException} from "@nestjs/common";
 import {UserInterestDto} from "../dto/user-interest.dto";
 import {UserInterest, UserInterestDocument} from "../../core/schemas/user-interest.schema";
 import {InjectModel} from "@nestjs/mongoose";
@@ -37,29 +37,21 @@ export class UserInterestService
         }
     }
 
-    async create(data: UserInterestDto): Promise<UserInterestDocument>
+    async create(name: string): Promise<UserInterestDocument>
     {
-        let result: UserInterestDocument = null;
-
-        if (typeof data.id !== 'undefined')
-        {
-            result = await this.model.findOne(new Types.ObjectId(data.id));
-        }
-        else if ((typeof data.name !== 'undefined') && (data.name !== ''))
-        {
-            result = await this.model.findOne({ name: data.name });
-            if (!result)
-            {
-                // @ts-ignore
-                result = new this.model({ name: data.name });
-                // @ts-ignore
-                await interest.save();
-            }
-        }
-
+        let result: UserInterestDocument = await this.model.findOne({ name: name });
         if (!result)
         {
-            throw new BadRequestException('Cannot add this interest!');
+           result = new this.model({ name });
+
+           try {
+               // @ts-ignore
+               await result.save();
+           }
+           catch (error)
+           {
+               throw new InternalServerErrorException('Cannot create this interest');
+           }
         }
 
         return result;

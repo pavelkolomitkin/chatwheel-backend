@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {BadRequestException, Injectable} from "@nestjs/common";
 import {UserFullnameDto} from "../dto/user-fullname.dto";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {InjectModel} from "@nestjs/mongoose";
@@ -39,33 +39,48 @@ export class ProfileService
         return user;
     }
 
-    async addInterest(data: UserInterestDto, user: ClientUserDocument): Promise<UserInterestDocument>
+    async addInterest({ name }: UserInterestDto, user: ClientUserDocument): Promise<UserInterestDocument>
     {
-        const interest: UserInterestDocument = await this.interestService.create(data);
+        try {
+            let result: UserInterestDocument = await this.interestService.create(name);
 
-        await this.model.updateOne(
-            {
-                _id: user.id
-            },
-            {
-                $addToSet: {
-                    interests: interest.id
-                }
-            });
+            await this.model.updateOne(
+                {
+                    _id: user.id
+                },
+                {
+                    $addToSet: {
+                        interests: result.id
+                    }
+                });
 
-        return interest;
+            return result;
+        }
+        catch (error)
+        {
+            throw new BadRequestException('Cannot add this interest')
+        }
     }
 
     async removeInterest(interest: UserInterestDocument, user: ClientUserDocument)
     {
-        await this.model.updateOne({
-            _id: user.id,
-        },
-            {
-                $pull: {
-                    interests: [interest.id]
-                }
-            });
+        try {
+            await this.model.updateOne({
+                    _id: user.id,
+                },
+                {
+                    $pull: {
+                        interests:
+                            {
+                                $in: [interest.id]
+                            }
+                    }
+                });
+        }
+        catch (error)
+        {
+            throw new BadRequestException('Cannot remove this interest')
+        }
     }
 
     async updateLocation(user: ClientUserDocument, data: GeoLocationDto = null): Promise<ClientUserDocument>
