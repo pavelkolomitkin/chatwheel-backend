@@ -11,6 +11,8 @@ import {UserDocument} from "../schemas/user.schema";
 @Injectable()
 export class ImageThumbService
 {
+    static ORIGINAL_SIZE = 'original';
+
     constructor(private readonly config: ConfigService) {}
 
     async getUserAvatar(user: UserDocument, size: string): Promise<string>
@@ -18,13 +20,6 @@ export class ImageThumbService
         if (!user.avatar)
         {
             throw new CoreException('User has not avatar!');
-        }
-
-        const thumbConfig = this.config.get('thumbs');
-        const avatarSizes = thumbConfig['avatar'][size];
-        if (!avatarSizes)
-        {
-            throw new CoreException('Invalid size!');
         }
 
         // @ts-ignore
@@ -35,6 +30,18 @@ export class ImageThumbService
         }
         catch (error) {
             throw new CoreException('System Error');
+        }
+
+        if (size === ImageThumbService.ORIGINAL_SIZE)
+        {
+            return originalFile;
+        }
+
+        const thumbConfig = this.config.get('thumbs');
+        const avatarSizes = thumbConfig['avatar'][size];
+        if (!avatarSizes)
+        {
+            throw new CoreException('Invalid size!');
         }
 
         // @ts-ignore
@@ -52,7 +59,6 @@ export class ImageThumbService
             }
 
         }
-
 
         const filePath = directoryPath + '/' + size;
         try {

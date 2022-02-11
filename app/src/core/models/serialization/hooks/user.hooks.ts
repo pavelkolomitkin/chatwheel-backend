@@ -20,4 +20,6 @@ export const userAvatarThumbsHook = (data: any) => {
     {
         data.avatarThumbs[size] = avatarThumbProvider(id, fileName, size);
     }
+
+    data.avatarThumbs['original'] = avatarThumbProvider(id, fileName, 'original');
 };
