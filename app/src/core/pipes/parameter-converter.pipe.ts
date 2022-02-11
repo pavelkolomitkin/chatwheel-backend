@@ -30,7 +30,7 @@ export class ParameterConverterPipe implements PipeTransform
             result = await this.connection.model(model).findOne(query);
         }
         catch (e) {
-            debugger
+            //debugger
         }
 
         if (!result) {

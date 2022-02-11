@@ -15,7 +15,6 @@ export class ImageThumbService
 
     async getUserAvatar(user: UserDocument, size: string): Promise<string>
     {
-        debugger
         if (!user.avatar)
         {
             throw new CoreException('User has not avatar!');

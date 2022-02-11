@@ -16,7 +16,6 @@ export const userAvatarThumbsHook = (data: any) => {
     const id: string = data.id.toString();
     const fileName = data.avatar.filename;
 
-    debugger
     for (const size of Object.keys(avatarThumbs))
     {
         data.avatarThumbs[size] = avatarThumbProvider(id, fileName, size);

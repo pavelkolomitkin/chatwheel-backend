@@ -6,14 +6,20 @@ export type GeoPointDocument = GeoPoint & Document;
 
 @Expose()
 @Schema({
-    id: false,
+    toObject: {
+        transform: (doc, ret) => {
+
+            const [longitude, latitude] = ret.coordinates;
+
+            return {longitude, latitude};
+        }
+    }
 })
 export class GeoPoint
 {
     @Prop({
         type: MongooseSchema.Types.String,
-        enum: ['Point'],
-        required: true
+        default: 'Point'
     })
     type: string;
 
@@ -23,4 +29,9 @@ export class GeoPoint
     coordinates: Number[];
 }
 
-export const GeoPointSchema = SchemaFactory.createForClass(GeoPoint);
+const GeoPointSchema = SchemaFactory.createForClass(GeoPoint);
+
+//GeoPointSchema.methods.serialize = createSerializer([GeoPoint]);
+
+
+export { GeoPointSchema };

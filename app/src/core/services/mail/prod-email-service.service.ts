@@ -28,7 +28,7 @@ export class ProdEmailService implements EmailServiceInterface
         }
         catch (e)
         {
-            debugger
+            //debugger
             console.log(e);
         }
     }

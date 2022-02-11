@@ -15,6 +15,13 @@ import {GeoPoint, GeoPointDocument} from "../../core/schemas/geo/geo-point.schem
 @Injectable()
 export class ProfileService
 {
+    static PROFILE_POPULATE_DEFAULT_FIELDS = [
+        'residenceCountry',
+        'searchCountry',
+        'interests',
+        'geoLocation'
+    ];
+
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
         private readonly interestService: UserInterestService
@@ -94,20 +101,23 @@ export class ProfileService
             ]
         }
 
-        debugger
-        const updateResult = await this.model.updateOne({
-            _id: user.id
-        },
-            {
-                $set: location
-            });
+        //debugger
+        const updatedUser: ClientUserDocument = await this.model.findByIdAndUpdate(user.id, {
+            $set: {
+                geoLocation: {
+                    type: 'Point',
+                    coordinates: location
+                }
+            }
+        }
+        ).populate(ProfileService.PROFILE_POPULATE_DEFAULT_FIELDS.join(' '));
 
-        return user;
+        return updatedUser;
     }
 
     async updateResidenceCountry(country: CountryDocument, user: ClientUserDocument): Promise<ClientUserDocument>
     {
-        debugger
+        //debugger
         user.residenceCountry = country;
 
         await user.save();

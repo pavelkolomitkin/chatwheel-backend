@@ -25,7 +25,6 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
     async validate({ id })
     {
-        debugger
         const user: UserDocument = await this
             .userModel
             .findOne({
@@ -43,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy)
             if (user.roles.includes(ROLE_CLIENT_USER))
             {
                 await user
-                    .populate('residenceCountry searchCountry interests')
+                    .populate('residenceCountry searchCountry interests geoLocation')
 
                 ;
             }

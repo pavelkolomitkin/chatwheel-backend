@@ -123,11 +123,11 @@ export class ProfileController
     @HttpCode(HttpStatus.OK)
     async updateGeoLocation(@Body() location: GeoLocationDto, @CurrentUser() user: ClientUserDocument)
     {
-        await this.service.updateLocation(user, location);
+        const updatedUser: ClientUserDocument = await this.service.updateLocation(user, location);
 
         return {
             // @ts-ignore
-            user: user.serialize(['mine'])
+            user: updatedUser.serialize(['mine'])
         }
     }
 
