@@ -18,8 +18,8 @@ export class UniqueUserEmailValidator implements ValidatorConstraintInterface
 
     async validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> {
 
-        const user = await this.userModel.findOne({email: value});
-
-        return !user;
+        // @ts-ignore
+        const users = await this.userModel.findWithDeleted({email: value});
+        return users.length === 0;
     }
 }

@@ -133,4 +133,11 @@ export class ProfileService
 
         return user;
     }
+
+    async removeAccount(user: ClientUserDocument): Promise<ClientUserDocument>
+    {
+        await user.delete();
+
+        return user;
+    }
 }

@@ -1,4 +1,4 @@
-import {Body, Controller, HttpCode, HttpStatus, Put, UseGuards} from "@nestjs/common";
+import {Body, Controller, Delete, HttpCode, HttpStatus, Put, UseGuards} from "@nestjs/common";
 import {UserFullnameDto} from "../dto/user-fullname.dto";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUserDocument} from "../../core/schemas/client-user.schema";
@@ -141,5 +141,17 @@ export class ProfileController
             // @ts-ignore
             user: user.serialize(['mine'])
         }
+    }
+
+    @Delete('remove-account')
+    @HttpCode(HttpStatus.OK)
+    async removeAccount(@CurrentUser() user: ClientUserDocument)
+    {
+        const deletedUser: ClientUserDocument = await this.service.removeAccount(user);
+
+        return {
+            // @ts-ignore
+            user: deletedUser.serialize(['mine'])
+        };
     }
 }
