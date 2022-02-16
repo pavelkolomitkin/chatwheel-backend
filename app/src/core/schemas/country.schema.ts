@@ -5,7 +5,6 @@ import {CurrencyDocument} from "./currency.schema";
 import {LanguageDocument} from "./language.schema";
 import {createSerializer} from "../serializer/serializer";
 import {Exclude, Expose, Type} from "class-transformer";
-import * as autoPopulate from "mongoose-autopopulate";
 
 export type CountryDocument = Country & Document;
 
@@ -67,7 +66,6 @@ const CountrySchema = SchemaFactory.createForClass(Country);
 
 CountrySchema.methods.serialize = createSerializer([Country]);
 
-// @ts-ignore
-CountrySchema.plugin(autoPopulate);
+CountrySchema.plugin(require('mongoose-autopopulate'));
 
 export { CountrySchema };

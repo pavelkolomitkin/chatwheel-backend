@@ -154,4 +154,5 @@ export class ProfileController
             user: deletedUser.serialize(['mine'])
         };
     }
+
 }

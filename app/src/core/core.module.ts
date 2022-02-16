@@ -3,26 +3,30 @@ import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
 import {BadRequestFilter} from './fiters/bad-request.filter';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {GlobalExceptionFilter} from './fiters/global-exception.filter';
-import {MongooseModule} from "@nestjs/mongoose";
-import {User, UserSchema} from "./schemas/user.schema";
-import {ClientUser, ClientUserSchema} from "./schemas/client-user.schema";
-import {AdminUser, AdminUserSchema} from "./schemas/admin-user.schema";
-import {EntityExistsValidator} from "./validators/entity-exists.validator";
+import {MongooseModule} from '@nestjs/mongoose';
+import {User, UserSchema} from './schemas/user.schema';
+import {ClientUser, ClientUserSchema} from './schemas/client-user.schema';
+import {AdminUser, AdminUserSchema} from './schemas/admin-user.schema';
+import {EntityExistsValidator} from './validators/entity-exists.validator';
 import { provider as EmailServiceProvider } from './providers/email-service.provider';
-import {GeoPoint, GeoPointSchema} from "./schemas/geo/geo-point.schema";
-import {AbuseReport, AbuseReportSchema} from "./schemas/abuse-report.schema";
-import {BannedUser} from "./schemas/banned-user.schema";
-import {Country, CountrySchema} from "./schemas/country.schema";
-import {Currency, CurrencySchema} from "./schemas/currency.schema";
-import {Language, LanguageSchema} from "./schemas/language.schema";
-import {Region, RegionSchema} from "./schemas/region.schema";
-import {UserInterest, UserInterestSchema} from "./schemas/user-interest.schema";
-import {MulterModule} from "@nestjs/platform-express";
+import {GeoPoint, GeoPointSchema} from './schemas/geo/geo-point.schema';
+import {AbuseReport, AbuseReportSchema} from './schemas/abuse-report.schema';
+import {BannedUser} from './schemas/banned-user.schema';
+import {Country, CountrySchema} from './schemas/country.schema';
+import {Currency, CurrencySchema} from './schemas/currency.schema';
+import {Language, LanguageSchema} from './schemas/language.schema';
+import {Region, RegionSchema} from './schemas/region.schema';
+import {UserInterest, UserInterestSchema} from './schemas/user-interest.schema';
+import {MulterModule} from '@nestjs/platform-express';
 import customConfig from './config/index';
-import {CountryController} from "./controllers/country.controller";
-import {AvatarController} from "./controllers/avatar.controller";
-import {ImageThumbService} from "./services/image-thumb.service";
-import {UploadManagerService} from "./services/upload-manager.service";
+import {CountryController} from './controllers/country.controller';
+import {AvatarController} from './controllers/avatar.controller';
+import {ImageThumbService} from './services/image-thumb.service';
+import {UploadManagerService} from './services/upload-manager.service';
+import {Conversation, ConversationSchema} from './schemas/conversation.schema';
+import {ConversationMessage, ConversationMessageSchema} from './schemas/conversation-message.schema';
+import {ConversationMessageList, ConversationMessageListSchema} from './schemas/conversation-message-list.schema';
+import {Message, MessageSchema} from './schemas/message.schema';
 
 @Global()
 @Module({
@@ -80,7 +84,23 @@ import {UploadManagerService} from "./services/upload-manager.service";
             {
                 name: UserInterest.name,
                 schema: UserInterestSchema
-            }
+            },
+            {
+                name: Conversation.name,
+                schema: ConversationSchema
+            },
+            {
+                name: ConversationMessage.name,
+                schema: ConversationMessageSchema
+            },
+            {
+                name: ConversationMessageList.name,
+                schema: ConversationMessageListSchema
+            },
+            {
+                name: Message.name,
+                schema: MessageSchema
+            },
         ]),
 
         MulterModule.registerAsync({

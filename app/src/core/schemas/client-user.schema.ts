@@ -4,9 +4,8 @@ import {Exclude, Expose, Type} from 'class-transformer';
 import {createSerializer} from "../serializer/serializer";
 import {Schema as MongooseSchema} from "mongoose";
 import {Country, CountryDocument, CountrySchema} from "./country.schema";
-import {UserInterestDocument} from "./user-interest.schema";
+import {UserInterest, UserInterestDocument} from "./user-interest.schema";
 import {GeoPointDocument, GeoPointSchema} from "./geo/geo-point.schema";
-import * as autoPopulate from "mongoose-autopopulate";
 import {userAvatarThumbsHook} from "../models/serialization/hooks/user.hooks";
 
 export type ClientUserDocument = UserDocument & ClientUser;
@@ -29,7 +28,7 @@ export class ClientUser
     isActivated: boolean;
 
     @Type(() => Country)
-    @Expose({ groups:  ['mine', 'admin'] })
+    @Expose({ groups:  ['mine', 'admin', 'details'] })
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Country',
@@ -64,6 +63,7 @@ export class ClientUser
     })
     about: string;
 
+    @Type(() => UserInterest)
     @Expose()
     @Prop({
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'UserInterest' }],
@@ -79,6 +79,6 @@ ClientUserSchema.virtual('roles').get(function(){
 
 ClientUserSchema.methods.serialize = createSerializer([User, ClientUser], userAvatarThumbsHook);
 // @ts-ignore
-ClientUserSchema.plugin(autoPopulate);
+ClientUserSchema.plugin(require('mongoose-autopopulate'));
 
 export { ClientUserSchema };

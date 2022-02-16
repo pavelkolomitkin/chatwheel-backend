@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable} from "@nestjs/common";
+import {BadRequestException, Inject, Injectable} from "@nestjs/common";
 import {UserFullnameDto} from "../dto/user-fullname.dto";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {InjectModel} from "@nestjs/mongoose";
@@ -6,10 +6,11 @@ import {Model} from "mongoose";
 import {UserAboutDto} from "../dto/user-about.dto";
 import {UserInterestService} from "./user-interest.service";
 import {UserInterestDto} from "../dto/user-interest.dto";
-import {UserInterest, UserInterestDocument} from "../../core/schemas/user-interest.schema";
+import {UserInterestDocument} from "../../core/schemas/user-interest.schema";
 import {CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
-import {GeoPoint, GeoPointDocument} from "../../core/schemas/geo/geo-point.schema";
+import {REQUEST} from "@nestjs/core";
+import { Request } from 'express';
 
 
 @Injectable()
@@ -24,8 +25,15 @@ export class ProfileService
 
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
-        private readonly interestService: UserInterestService
+        private readonly interestService: UserInterestService,
+        @Inject(REQUEST) private readonly request: Request
     ) {
+    }
+
+    getCurrentUser(): ClientUserDocument
+    {
+        // @ts-ignore
+        return this.request.user;
     }
 
     async updateFullName(data: UserFullnameDto, user: ClientUserDocument): Promise<ClientUserDocument>
@@ -101,8 +109,8 @@ export class ProfileService
             ]
         }
 
-        //debugger
-        const updatedUser: ClientUserDocument = await this.model.findByIdAndUpdate(user.id, {
+        debugger
+        await this.model.updateOne({ _id: user.id }, {
             $set: {
                 geoLocation: {
                     type: 'Point',
@@ -110,7 +118,9 @@ export class ProfileService
                 }
             }
         }
-        ).populate(ProfileService.PROFILE_POPULATE_DEFAULT_FIELDS.join(' '));
+        );
+        const updatedUser: ClientUserDocument = await this.model.findOne({ _id: user.id })
+            .populate(ProfileService.PROFILE_POPULATE_DEFAULT_FIELDS.join(' '));
 
         return updatedUser;
     }
@@ -139,5 +149,13 @@ export class ProfileService
         await user.delete();
 
         return user;
+    }
+
+    async isAddresseeBanned(user: ClientUserDocument, addressee: ClientUserDocument): Promise<boolean>
+    {
+        return !!await this.model.findOne({
+            _id: user,
+            blackList: addressee.id
+        });
     }
 }
