@@ -1,16 +1,18 @@
-import {Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Post, Query} from "@nestjs/common";
-import {CurrentUser} from "../../core/decorators/user.decorator";
-import {ClientUserDocument} from "../../core/schemas/client-user.schema";
-import {DateTimePipe} from "../../core/pipes/date-time.pipe";
-import {UserConversationService} from "../services/user-conversation.service";
-import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
+import {Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Query, UseGuards} from '@nestjs/common';
+import {CurrentUser} from '../../core/decorators/user.decorator';
+import {ClientUser, ClientUserDocument} from '../../core/schemas/client-user.schema';
+import {UserConversationService} from '../services/user-conversation.service';
+import {ParameterConverter, ParameterConverterSourceType} from '../../core/decorators/parameter-converter.decorator';
 import {
     ConversationMessageList,
     ConversationMessageListDocument
-} from "../../core/schemas/conversation-message-list.schema";
-import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
+} from '../../core/schemas/conversation-message-list.schema';
+import {ParameterConverterPipe} from '../../core/pipes/parameter-converter.pipe';
+import {DateTimePipe} from '../../core/pipes/date-time.pipe';
+import {AuthGuard} from "@nestjs/passport";
 
 @Controller('conversation')
+@UseGuards(AuthGuard('jwt'))
 export class UserConversationController
 {
     constructor(
@@ -22,13 +24,13 @@ export class UserConversationController
     @HttpCode(HttpStatus.OK)
     async getList(
         @CurrentUser() user: ClientUserDocument,
-        @Query('lastDate', DateTimePipe) lastDate: Date,
-        @Query('excludedId') excludedId: string
+        @Query('lastDate', DateTimePipe) lastDate: Date = null,
+        @Query('latestId') latestId: string = null
     )
     {
         const list: ConversationMessageListDocument[] = await this
             .conversationService
-            .getConversations(user, { lastDate, excludedId });
+            .getConversations(user, { latestId, lastDate });
 
         return {
             // @ts-ignore
@@ -49,15 +51,23 @@ export class UserConversationController
     )
     {
         await conversationList.populate('owner');
-
         if (user.id !== conversationList.owner.id)
         {
             throw new NotFoundException();
         }
 
+        await conversationList.populate('conversation.members.member');
+
+        const members: any[] = conversationList.conversation.members;
+        const membersData: any[] = members.map(item => {
+            item.member = item.member.serialize();
+            return item;
+        });
+
         return {
             // @ts-ignore
-            conversationList: conversationList.serialize()
+            messageList: conversationList.serialize(),
+            members: membersData
         };
     }
 
@@ -74,5 +84,28 @@ export class UserConversationController
     )
     {
         await conversationList.delete();
+    }
+
+
+    @Get('/individual/:addresseeId')
+    @HttpCode(HttpStatus.OK)
+    async getIndividual(
+        @CurrentUser() user: ClientUserDocument,
+        @ParameterConverter({
+            model: ClientUser.name,
+            field: 'id',
+            paramName: 'addresseeId',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) addressee: ClientUserDocument
+    )
+    {
+        const list: ConversationMessageListDocument = await this
+            .conversationService
+            .getIndividualConversationMessageList(user, addressee);
+
+        return {
+            // @ts-ignore
+            list: list.serialize()
+        };
     }
 }

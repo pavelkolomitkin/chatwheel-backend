@@ -31,8 +31,6 @@ export class ConversationMessageList extends BaseSchema
     })
     owner: UserDocument;
 
-    @Type(() => Conversation)
-    @Expose()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'Conversation',
@@ -40,20 +38,38 @@ export class ConversationMessageList extends BaseSchema
     })
     conversation: ConversationDocument;
 
-    @Type(() => Message)
-    @Expose()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
-        ref: 'Message',
+        ref: 'ConversationMessage',
         required: false,
         default: null
     })
-    lastMessage: MessageDocument;
+    lastMessage: ConversationMessageDocument;
 }
 
 const ConversationMessageListSchema = SchemaFactory.createForClass(ConversationMessageList);
 
-ConversationMessageListSchema.methods.serialize = createSerializer([ConversationMessageList]);
+ConversationMessageListSchema.methods.serialize = function(groups: any = [])
+{
+    let lastMessage = null;
+    if (!!this.lastMessage)
+    {
+        lastMessage = {
+            id: this.lastMessage.id,
+            isRead: this.lastMessage.isRead,
+            message: this.lastMessage.message.serialize(groups)
+        };
+
+        lastMessage.message.author = this.lastMessage.message.author.serialize(groups);
+    }
+
+    return {
+        id: this.id,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt,
+        lastMessage: lastMessage
+    };
+}
 ConversationMessageListSchema.plugin(require('mongoose-autopopulate'));
 
 export { ConversationMessageListSchema };

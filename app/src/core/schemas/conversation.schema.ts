@@ -18,7 +18,7 @@ export type ConversationDocument = Conversation & Document;
 })
 export class Conversation extends BaseSchema
 {
-    @Expose()
+
     @Prop({
         type: [{
             member: {

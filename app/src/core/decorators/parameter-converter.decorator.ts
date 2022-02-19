@@ -10,19 +10,22 @@ export interface ParameterConverterData
 {
     value: any,
     model: string,
-    field: string
+    field: string,
+    required: boolean
 }
 
 export const ParameterConverter = createParamDecorator((data: {
     model: string,
     paramName: string,
     field: string,
-    sourceType: ParameterConverterSourceType
+    sourceType: ParameterConverterSourceType,
+    required?: boolean
 }, context: ExecutionContext): ParameterConverterData => {
 
     //debugger
     const request: any = context.switchToHttp().getRequest();
-    const { model, field, paramName, sourceType } = data;
+    let { model, field, paramName, sourceType, required } = data;
+    required = (typeof required === 'undefined');
 
     let paramValue: any = null;
 
@@ -55,6 +58,7 @@ export const ParameterConverter = createParamDecorator((data: {
     return {
         value: paramValue,
         model,
-        field
+        field,
+        required
     };
 });

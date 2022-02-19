@@ -1,11 +1,12 @@
 import {Transform} from "class-transformer";
 import {IsNotEmpty, MaxLength, Validate} from "class-validator";
-import {IsUserBannedByAddresseeValidator} from "../validators/is-user-banned-by-addressee.validator";
+import {EntityExistsValidator} from "../../core/validators/entity-exists.validator";
+import {ClientUser} from "../../core/schemas/client-user.schema";
 
 export class SentMessageUserDto
 {
     @IsNotEmpty()
-    @Validate(IsUserBannedByAddresseeValidator, [{ context: IsUserBannedByAddresseeValidator.ADDRESSEE_CONTEXT }])
+    @Validate(EntityExistsValidator, [ClientUser.name, 'id'], { message: 'The user is not found!' })
     addresseeId: string;
 
     @Transform(({value}) => value.trim())

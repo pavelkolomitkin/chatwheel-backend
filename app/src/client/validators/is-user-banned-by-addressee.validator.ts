@@ -16,19 +16,22 @@ export class IsUserBannedByAddresseeValidator implements ValidatorConstraintInte
 
     private defaultContext: string = IsUserBannedByAddresseeValidator.ADDRESSEE_CONTEXT;
 
+    private errorMessage: string = "You've been banned by the user!";
+
     constructor(
         @InjectModel(ClientUser.name) private readonly userModel: Model<ClientUserDocument>,
         private readonly conversationService: ConversationService,
-        private readonly profileService: ProfileService,
+        private readonly profileService: ProfileService
     ) {
     }
 
     defaultMessage(validationArguments?: ValidationArguments): string {
-        return "You've been banned by the user!";
+        return this.errorMessage;
     }
 
     async validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> {
 
+        debugger
         // @ts-ignore
         const user: ClientUserDocument = this.profileService.getCurrentUser();
 

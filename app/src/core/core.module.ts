@@ -11,7 +11,7 @@ import {EntityExistsValidator} from './validators/entity-exists.validator';
 import { provider as EmailServiceProvider } from './providers/email-service.provider';
 import {GeoPoint, GeoPointSchema} from './schemas/geo/geo-point.schema';
 import {AbuseReport, AbuseReportSchema} from './schemas/abuse-report.schema';
-import {BannedUser} from './schemas/banned-user.schema';
+import {BannedUser, BannedUserSchema} from './schemas/banned-user.schema';
 import {Country, CountrySchema} from './schemas/country.schema';
 import {Currency, CurrencySchema} from './schemas/currency.schema';
 import {Language, LanguageSchema} from './schemas/language.schema';
@@ -101,6 +101,10 @@ import {Message, MessageSchema} from './schemas/message.schema';
                 name: Message.name,
                 schema: MessageSchema
             },
+            {
+                name: BannedUser.name,
+                schema: BannedUserSchema
+            }
         ]),
 
         MulterModule.registerAsync({

@@ -20,8 +20,8 @@ export class ConversationService
                 {
                     members: {
                         $all: [
-                            { $elemMatch: { member: new Types.ObjectId(user.id) }},
-                            { $elemMatch: { member: new Types.ObjectId(addressee.id) }}
+                            { $elemMatch: { member: user._id }},
+                            { $elemMatch: { member: addressee._id }}
                         ]
                     }
                 },
@@ -29,6 +29,9 @@ export class ConversationService
                     members: {
                         $size: 2
                     }
+                },
+                {
+                    isIndividual: true
                 }
             ]
         });
@@ -46,7 +49,8 @@ export class ConversationService
                             member: addressee,
                             joinTime: new Date()
                         },
-                    ]
+                    ],
+                    isIndividual: true
                 });
 
         await result.save();
@@ -56,7 +60,7 @@ export class ConversationService
 
     async isUserMember(user: ClientUserDocument, conversation: ConversationDocument)
     {
-        return !!await this.model.findOne({'members.member': user, conversation: conversation});
+        return !!await this.model.findOne({'members.member': user, _id: conversation.id});
     }
 
     async get(id: string)

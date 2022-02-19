@@ -13,6 +13,7 @@ import {IsUserBannedByAddresseeValidator} from "./validators/is-user-banned-by-a
 import {IsUserConversationMemberValidator} from "./validators/is-user-conversation-member.validator";
 import {IsUserMessageAuthorValidator} from "./validators/is-user-message-author.validator";
 import {UserProfileController} from "./controllers/user-profile.controller";
+import {UserProfileService} from "./services/user-profile.service";
 
 @Module({
     controllers: [
@@ -29,6 +30,7 @@ import {UserProfileController} from "./controllers/user-profile.controller";
         UserConversationService,
         ConversationMessageService,
         UserInterestService,
+        UserProfileService,
 
         IsUserBannedByAddresseeValidator,
         IsUserConversationMemberValidator,

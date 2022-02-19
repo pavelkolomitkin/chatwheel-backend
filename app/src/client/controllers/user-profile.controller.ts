@@ -4,11 +4,19 @@ import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.sch
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
 import {AuthGuard} from "@nestjs/passport";
+import {UserProfileService} from "../services/user-profile.service";
+import {ProfileService} from "../services/profile.service";
 
 @Controller('user-profile')
 @UseGuards(AuthGuard('jwt'))
 export class UserProfileController
 {
+    constructor(
+        private readonly service: UserProfileService,
+        private readonly profileService: ProfileService
+    ) {
+    }
+
     @Get(':id')
     @HttpCode(HttpStatus.OK)
     async get(
@@ -25,7 +33,8 @@ export class UserProfileController
 
         return {
             // @ts-ignore
-            user: user.serialize()
+            user: user.serialize(),
+            isBanned: await this.profileService.isAddresseeBanned(user, currentUser)
         };
     }
 }

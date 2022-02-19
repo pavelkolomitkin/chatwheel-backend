@@ -85,15 +85,6 @@ export class User extends BaseSchema {
         required: false
     })
     blockingReason: string;
-
-    @Prop({
-        type: [{
-            type: MongooseSchema.Types.ObjectId,
-            ref: 'User',
-        }],
-        select: false
-    })
-    blackList: string[];
 }
 
 const UserSchema = SchemaFactory.createForClass(User);

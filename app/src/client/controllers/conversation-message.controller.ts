@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query} from "@nestjs/common";
+import {Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, UseGuards} from "@nestjs/common";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
@@ -15,11 +15,13 @@ import {SentMessageConversationDto} from "../dto/sent-message-conversation.dto";
 import {EditMessageDto} from "../dto/edit-message.dto";
 import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
 import {RemoveMessageDto} from "../dto/remove-message.dto";
+import {AuthGuard} from "@nestjs/passport";
+import any = jasmine.any;
 
 @Controller('message')
+@UseGuards(AuthGuard('jwt'))
 export class ConversationMessageController
 {
-
     constructor(
         private service: ConversationMessageService
     ) {
@@ -36,19 +38,19 @@ export class ConversationMessageController
             sourceType: ParameterConverterSourceType.PARAM
         }, ParameterConverterPipe) messageList: ConversationMessageListDocument,
         @Query('lastDate', DateTimePipe) lastDate: Date,
-        @Query('excludedId') excludedId: string
+        @Query('latestId') latestId: string
     )
     {
-        const list: ConversationMessageDocument[] = await this.service.getList(messageList, { lastDate, excludedId })
+        const list = await this.service.getList(messageList, { lastDate, latestId })
 
         return {
             // @ts-ignore
-            list: list.map(item => item.serialize())
+            list
         };
     }
 
     @Post('/send-user')
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async sendToUser(
         @CurrentUser() user: ClientUserDocument,
         @ParameterConverter({
@@ -62,16 +64,25 @@ export class ConversationMessageController
     {
         const message: ConversationMessageDocument = await this.service.sendToUser(data, user, addressee);
 
-        return {
-            // @ts-ignore
-            message: message.serialize(),
-            // @ts-ignore
-            conversation: message.messageList.serialize()
+        const result: any = {
+            message: {
+                id: message.id,
+                isRead: message.isRead,
+                // @ts-ignore
+                message: message.message.serialize()
+            }
         };
+
+        // @ts-ignore
+        result.message.message.author = message.message.author.serialize();
+        // @ts-ignore
+        result.conversation = message.messageList.serialize();
+
+        return result;
     }
 
     @Post('/send-conversation')
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     async sendToConversation(
         @CurrentUser() user: ClientUserDocument,
         @ParameterConverter({
@@ -87,7 +98,7 @@ export class ConversationMessageController
 
         return {
             // @ts-ignore
-            message: message.serialize(),
+            message: message.serialize()
         };
     }
 

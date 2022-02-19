@@ -6,7 +6,7 @@ import {
     ConversationMessageList,
     ConversationMessageListDocument
 } from "../../core/schemas/conversation-message-list.schema";
-import {ClientUserDocument} from "../../core/schemas/client-user.schema";
+import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ProfileService} from "./profile.service";
 import {ConversationDocument} from "../../core/schemas/conversation.schema";
 import {ConversationService} from "./conversation.service";
@@ -23,6 +23,7 @@ export class ConversationMessageService
     constructor(
         @InjectModel(ConversationMessage.name) private readonly model: Model<ConversationMessageDocument>,
         @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
+        @InjectModel(ClientUser.name) private readonly userModel: Model<ClientUserDocument>,
         private readonly messageListService: ConversationMessageListService,
 
         private readonly profileService: ProfileService,
@@ -30,21 +31,51 @@ export class ConversationMessageService
     ) {    }
 
 
-    getList(list: ConversationMessageListDocument, criteria: any)
+    async getList(list: ConversationMessageListDocument, criteria: any, limit: number = 10)
     {
+
         const pipeline = [
-            { $match: { conversationList: list.id } },
+            { $match: { messageList: list._id } },
             { $lookup: { from: 'messages', localField: 'message', foreignField: '_id', as: 'message'} },
-            { $sort: { createdAt: -1 } },
+            { $unwind: '$message' },
+            { $sort: { 'message.createdAt': -1 } },
+            { $project: { _id: 1 } }
         ]
 
-        this.handleExcludedMessage(pipeline, criteria);
+        this.handleLatestMessage(pipeline, criteria);
         this.handleMessageLastDate(pipeline, criteria)
 
         // @ts-ignore
-        return this.model.aggregate(pipeline)
-            .limit(10)
-            ;
+        const items = await this.model.aggregate(pipeline).limit(limit);
+        const messageIds = items.map(item => item._id);
+
+        const messages = await this.model.find({
+            _id: {
+                $in : messageIds
+            }
+        })
+            .populate({
+                path: 'message',
+                populate: { path: 'author' }
+            });
+
+        const result = [];
+        for (let message of messages)
+        {
+            const item = {
+                id: message.id,
+                isRead: message.isRead,
+                // @ts-ignore
+                message: message.message.serialize()
+            };
+
+            // @ts-ignore
+            item.message.author = message.message.author.serialize();
+
+            result.push(item);
+        }
+
+        return result;
     }
 
     handleMessageLastDate(pipeline: Array<any>, criteria: any)
@@ -55,16 +86,22 @@ export class ConversationMessageService
         }
     }
 
-    handleExcludedMessage(pipeline: Array<any>, criteria: any)
+    handleLatestMessage(pipeline: Array<any>, criteria: any)
     {
-        if (criteria.excludedId)
+        if (criteria.latestId)
         {
-            pipeline.push({ $match: { message: { $ne: new Types.ObjectId(criteria.excludedId) } } });
+            pipeline.push({ $match: { message: { $ne: new Types.ObjectId(criteria.latestId) } } });
         }
     }
 
     async sendToUser(data: SentMessageUserDto, user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationMessageDocument>
     {
+        const isUserBanned: boolean = await this.profileService.isAddresseeBanned(addressee, user);
+        if (isUserBanned)
+        {
+            throw new BadRequestException("You've been banned by the user!");
+        }
+
         let conversation: ConversationDocument = await this.conversationService.getIndividual(user, addressee);
         if (!conversation)
         {
@@ -93,28 +130,23 @@ export class ConversationMessageService
 
         // create conversation messages
         const userConversationMessage: ConversationMessageDocument = await this.create(userMessageList, message, true);
-        await this.create(addresseeMessageList, message, false);
+        const addresseeConversationMessage: ConversationMessageDocument = await this.create(addresseeMessageList, message, false);
 
         // create a conversation message for user
-        userMessageList.lastMessage = message;
+        userMessageList.lastMessage = userConversationMessage;
         // create a conversation message for addressee
-        addresseeMessageList.lastMessage = message;
+        addresseeMessageList.lastMessage = addresseeConversationMessage;
 
         await userMessageList.save();
-        await addresseeMessageList.save()
-        // return the new message(should be linked to the conversation)
+        await addresseeMessageList.save();
 
         return userConversationMessage;
     }
 
     async sendToConversation(data: SentMessageConversationDto, user: ClientUserDocument, conversation: ConversationDocument): Promise<ConversationMessageDocument>
     {
-        let list: ConversationMessageList = await this.messageListService.get(user, conversation);
-        if (!list)
-        {
-            await this.messageListService.create(user, conversation, null);
-        }
 
+        let result: ConversationMessageDocument = null;
 
         const message: MessageDocument = new this.messageModel({
             conversation: conversation,
@@ -124,20 +156,24 @@ export class ConversationMessageService
         await message.save();
 
 
-        let result: ConversationMessageDocument = null;
-        const lists: ConversationMessageList[] = await this.messageListService.getConversationLists(conversation);
-        for (let list of lists)
+        const lists: ConversationMessageListDocument[] = await this.messageListService.getConversationLists(conversation);
+
+        await conversation.populate('members.member');
+        for (let memberItem of conversation.members)
         {
-            const isUserMessage = list.owner.id === user.id;
-
-            const conversationMessage: ConversationMessageDocument = await this.create(
-                list,
-                message,
-                isUserMessage
-            );
-
-            list.lastMessage = message;
             // @ts-ignore
+            const { member } = memberItem;
+
+            let list: ConversationMessageListDocument = lists.find(item => item.owner.id === member.id);
+            if (!list)
+            {
+                list = await this.messageListService.create(member, conversation, message);
+            }
+
+            const isUserMessage: boolean = user.id === member.id;
+            const conversationMessage: ConversationMessageDocument = await this.create(list, message, isUserMessage);
+
+            list.lastMessage = conversationMessage;
             await list.save();
 
             if (isUserMessage)
@@ -146,13 +182,14 @@ export class ConversationMessageService
             }
         }
 
+
         return result;
     }
 
-    async create(list: ConversationMessageList, message: MessageDocument, isRead: boolean): Promise<ConversationMessageDocument>
+    async create(list: ConversationMessageListDocument, message: MessageDocument, isRead: boolean): Promise<ConversationMessageDocument>
     {
         const result: ConversationMessageDocument = new this.model({
-            conversationList: list,
+            messageList: list,
             message: message,
             isRead: isRead
         });

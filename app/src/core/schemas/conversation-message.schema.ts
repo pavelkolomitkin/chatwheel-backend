@@ -11,7 +11,7 @@ export type ConversationMessageDocument = Document & ConversationMessage;
 @Schema({
     id: true,
     toObject: {
-        virtuals: true
+        virtuals: true,
     },
     toJSON: {
         virtuals: true
@@ -19,10 +19,11 @@ export type ConversationMessageDocument = Document & ConversationMessage;
 })
 export class ConversationMessage extends BaseSchema
 {
+    @Exclude()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'ConversationMessageList',
-        required: true
+        required: true,
     })
     messageList: ConversationMessageListDocument;
 
@@ -44,4 +45,6 @@ export class ConversationMessage extends BaseSchema
 }
 
 
-export const ConversationMessageSchema = SchemaFactory.createForClass(ConversationMessage);
+const ConversationMessageSchema = SchemaFactory.createForClass(ConversationMessage);
+
+export { ConversationMessageSchema };

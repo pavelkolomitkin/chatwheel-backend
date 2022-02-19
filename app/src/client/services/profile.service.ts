@@ -11,6 +11,7 @@ import {CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
 import {REQUEST} from "@nestjs/core";
 import { Request } from 'express';
+import {BannedUser, BannedUserDocument} from "../../core/schemas/banned-user.schema";
 
 
 @Injectable()
@@ -25,6 +26,7 @@ export class ProfileService
 
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
+        @InjectModel(BannedUser.name) private readonly bannedModel: Model<BannedUserDocument>,
         private readonly interestService: UserInterestService,
         @Inject(REQUEST) private readonly request: Request
     ) {
@@ -109,7 +111,6 @@ export class ProfileService
             ]
         }
 
-        debugger
         await this.model.updateOne({ _id: user.id }, {
             $set: {
                 geoLocation: {
@@ -153,9 +154,9 @@ export class ProfileService
 
     async isAddresseeBanned(user: ClientUserDocument, addressee: ClientUserDocument): Promise<boolean>
     {
-        return !!await this.model.findOne({
-            _id: user,
-            blackList: addressee.id
+        return !!await this.bannedModel.findOne({
+            applicant: user,
+            banned: addressee
         });
     }
 }

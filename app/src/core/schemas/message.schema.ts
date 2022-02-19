@@ -1,10 +1,11 @@
 import {BaseSchema} from "./base.schema";
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Document, Schema as MongooseSchema} from "mongoose";
-import {ClientUserDocument} from "./client-user.schema";
+import {ClientUser, ClientUserDocument} from "./client-user.schema";
 import {UserDocument} from "./user.schema";
 import {ConversationDocument} from "./conversation.schema";
-import {Exclude, Expose} from "class-transformer";
+import {Exclude, Expose, Type} from "class-transformer";
+import {createSerializer} from "../serializer/serializer";
 
 export type MessageDocument = Document & Message;
 
@@ -43,6 +44,7 @@ export class Message extends BaseSchema
     })
     text: string;
 
+    @Type(() => ClientUser)
     @Expose()
     @Prop({
         type: MongooseSchema.Types.ObjectId,
@@ -57,7 +59,11 @@ export class Message extends BaseSchema
         enum: MessageTypes,
         default: MessageTypes.TEXT
     })
-    type: string;
+    type: number;
 }
 
-export const MessageSchema = SchemaFactory.createForClass(Message);
+const MessageSchema = SchemaFactory.createForClass(Message);
+
+MessageSchema.methods.serialize = createSerializer([Message]);
+
+export { MessageSchema };
