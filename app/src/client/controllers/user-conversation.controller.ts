@@ -10,6 +10,8 @@ import {
 import {ParameterConverterPipe} from '../../core/pipes/parameter-converter.pipe';
 import {DateTimePipe} from '../../core/pipes/date-time.pipe';
 import {AuthGuard} from "@nestjs/passport";
+import {ConversationMessage} from "../../core/schemas/conversation-message.schema";
+import {Message} from "../../core/schemas/message.schema";
 
 @Controller('conversation')
 @UseGuards(AuthGuard('jwt'))
@@ -32,9 +34,47 @@ export class UserConversationController
             .conversationService
             .getConversations(user, { latestId, lastDate });
 
+        const newMessageNumbers = await this.conversationService.getConversationsNewMessages(list);
+
+        const result = list.map(item => {
+
+            const result = {
+                // @ts-ignore
+                ...item.serialize(),
+                // @ts-ignore
+                members: item.conversation.members.map(memberItem => {
+                    return {
+                        // @ts-ignore
+                        member: memberItem.member.serialize(),
+                        // @ts-ignore
+                        joinTime: memberItem.joinTime
+                    };
+                }),
+                newMessageNumber: newMessageNumbers[item._id.toString()]
+            }
+
+            const { lastMessage } = item;
+            if (!!lastMessage)
+            {
+                result.lastMessage = {
+                    id: lastMessage.id,
+                    isRead: lastMessage.isRead,
+                    // @ts-ignore
+                    message:{
+                        // @ts-ignore
+                      ...lastMessage.message.serialize(),
+                        // @ts-ignore
+                      author: lastMessage.message.author.serialize()
+                    }
+                };
+            }
+
+            return result;
+        });
+
         return {
             // @ts-ignore
-            list: list.map(item => item.serialize())
+            list: result
         };
     }
 
@@ -47,27 +87,54 @@ export class UserConversationController
             field: 'id',
             paramName: 'id',
             sourceType: ParameterConverterSourceType.PARAM
-        }, ParameterConverterPipe) conversationList: ConversationMessageListDocument
+        }, ParameterConverterPipe) messageList: ConversationMessageListDocument
     )
     {
-        await conversationList.populate('owner');
-        if (user.id !== conversationList.owner.id)
+        await messageList.populate('owner');
+        if (user.id !== messageList.owner.id)
         {
             throw new NotFoundException();
         }
 
-        await conversationList.populate('conversation.members.member');
-
-        const members: any[] = conversationList.conversation.members;
-        const membersData: any[] = members.map(item => {
-            item.member = item.member.serialize();
-            return item;
+        //await conversationList.populate('conversation.members.member');
+        await messageList.populate({
+            path: 'conversation',
+            populate: {
+                path: 'members',
+                populate: {
+                    path: 'member',
+                    model: ClientUser.name
+                }
+            }
         });
+
+        await messageList.populate({
+            path: 'lastMessage',
+            model: ConversationMessage.name,
+            populate: {
+                path: 'message',
+                model: Message.name,
+                populate: {
+                    path: 'author',
+                    model: ClientUser.name
+                }
+            },
+        });
+
+        //debugger
 
         return {
             // @ts-ignore
-            messageList: conversationList.serialize(),
-            members: membersData
+            ...messageList.serialize(),
+            // @ts-ignore
+            members: messageList.conversation.members.map(memberItem => {
+                return {
+                    // @ts-ignore
+                    member: memberItem.member.serialize(),
+                    // @ts-ignore
+                    joinTime: memberItem.joinTime
+                };
+            }),
         };
     }
 

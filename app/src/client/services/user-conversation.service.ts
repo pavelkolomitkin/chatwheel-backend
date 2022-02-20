@@ -1,23 +1,49 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
-import {ClientUserDocument} from "../../core/schemas/client-user.schema";
+import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {InjectModel} from "@nestjs/mongoose";
 import {
     ConversationMessageList,
     ConversationMessageListDocument
 } from "../../core/schemas/conversation-message-list.schema";
 import {Model, Types} from "mongoose";
+import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
 
 @Injectable()
 export class UserConversationService
 {
     constructor(
-        @InjectModel(ConversationMessageList.name) private model: Model<ConversationMessageListDocument>
+        @InjectModel(ConversationMessageList.name) private readonly model: Model<ConversationMessageListDocument>,
+        @InjectModel(ConversationMessage.name) private readonly conversationMessageModel: Model<ConversationMessageDocument>
     ) {
     }
 
-    getConversations(user: ClientUserDocument, criteria: any)
+    async getConversationsNewMessages(conversationMessageList: ConversationMessageListDocument[])
     {
-        const filter: Object = {};
+        const ids: any[] =conversationMessageList.map(item => item._id);
+
+        const newMessageNumbers = await this.conversationMessageModel.aggregate([
+            { $match: { messageList: { $in: ids } } },
+            { $group: {_id: '$messageList', newMessageNumber: {
+                        $sum: {
+                            $cond: ['$isRead', 0, 1]
+                        }
+            }}}
+        ]);
+
+        const result = {};
+
+        newMessageNumbers.forEach(item => {
+            result[item._id.toString()] = item.newMessageNumber;
+        });
+
+        return result
+    }
+
+    getConversations(user: ClientUserDocument, criteria: any, limit: number = 10)
+    {
+        const filter: Object = {
+            owner: user._id
+        };
 
         this.handleLatestId(filter, criteria);
         this.handleLastDate(filter, criteria);
@@ -25,11 +51,30 @@ export class UserConversationService
         return this
             .model
             .find(filter)
-            .populate('conversation')
-            .populate('conversation.members.$*member')
-            .populate('lastMessage')
+            .populate({
+                path: 'conversation',
+                populate: {
+                    path: 'members',
+                    populate: {
+                        path: 'member',
+                        model: ClientUser.name
+                    }
+                }
+            })
+            .populate({
+                path: 'lastMessage',
+                model: 'ConversationMessage',
+                populate: {
+                    path: 'message',
+                    model: 'Message',
+                    populate: {
+                        path: 'author',
+                        model: ClientUser.name
+                    }
+                }
+            })
             .sort({ updatedAt: -1 })
-            .limit(10)
+            .limit(limit)
         ;
     }
 

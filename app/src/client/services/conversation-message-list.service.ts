@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {BadRequestException, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {
     ConversationMessageList,
@@ -38,7 +38,7 @@ export class ConversationMessageListService
         });
     }
 
-    getConversationLists(conversation: ConversationDocument)
+    getConversationMessageLists(conversation: ConversationDocument)
     {
         return this.model.find({
             conversation: conversation
@@ -48,5 +48,21 @@ export class ConversationMessageListService
     async removeAllLastMessages(message: MessageDocument)
     {
         await this.model.updateMany({ lastMessage: message }, { $set: { lastMessage: null } });
+    }
+
+    async validateOwnership(
+        messageList: ConversationMessageListDocument,
+        user: ClientUserDocument,
+        errorMessage: string = 'Conversation is not found!')
+    {
+        if (!this.isUserOwner(messageList, user))
+        {
+            throw new BadRequestException(errorMessage);
+        }
+    }
+
+    isUserOwner(messageList: ConversationMessageListDocument, user: ClientUserDocument)
+    {
+        return (messageList.owner.id === user.id);
     }
 }

@@ -29,7 +29,6 @@ export class Conversation extends BaseSchema
                 type: MongooseSchema.Types.Date
             }
         }],
-        select: false
     })
     members: Object[];
 

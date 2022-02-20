@@ -1,9 +1,8 @@
-import {Injectable} from "@nestjs/common";
+import {BadRequestException, Injectable} from "@nestjs/common";
 import {ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {InjectModel} from "@nestjs/mongoose";
-import {Model, Types} from "mongoose";
+import {Model} from "mongoose";
 import {Conversation, ConversationDocument} from "../../core/schemas/conversation.schema";
-import {MessageDocument} from "../../core/schemas/message.schema";
 
 @Injectable()
 export class ConversationService
@@ -68,6 +67,14 @@ export class ConversationService
         return this.model.findById(id);
     }
 
+    async getMembers(conversation: ConversationDocument): Promise<ClientUserDocument[]>
+    {
+        await conversation.populate('members.member');
+
+        // @ts-ignore
+        return conversation.members.map(item => item.member);
+    }
+
     async getAddressee(individualConversation: ConversationDocument, user: ClientUserDocument): Promise<ClientUserDocument>
     {
         await individualConversation.populate('members.member');
@@ -85,5 +92,18 @@ export class ConversationService
         }
 
         return result;
+    }
+
+    async validateMembership(
+        conversation: ConversationDocument,
+        user: ClientUserDocument,
+        errorMessage: string = 'Conversation is not found!'
+    )
+    {
+        const isMember: boolean = await this.isUserMember(user, conversation);
+        if (!isMember)
+        {
+            throw new BadRequestException(errorMessage);
+        }
     }
 }

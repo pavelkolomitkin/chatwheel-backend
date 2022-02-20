@@ -143,11 +143,28 @@ export class ConversationMessageService
         return userConversationMessage;
     }
 
-    async sendToConversation(data: SentMessageConversationDto, user: ClientUserDocument, conversation: ConversationDocument): Promise<ConversationMessageDocument>
+    async sendToConversation(data: SentMessageConversationDto, user: ClientUserDocument, messageList: ConversationMessageListDocument)
+        : Promise<ConversationMessageDocument>
     {
+        // validated the conversation message list in order to check whether the user is an owner of the list
+        await this.messageListService.validateOwnership(messageList, user);
+        // validated the conversation message list on having the related conversation itself
+        await messageList.populate('conversation');
 
-        let result: ConversationMessageDocument = null;
+        const conversation: ConversationDocument = messageList.conversation;
+        if (!conversation)
+        {
+            throw new BadRequestException('The conversation is not found!');
+        }
 
+        // validated the user on membership of the conversation
+        await this.conversationService.validateMembership(conversation, user);
+
+        // if it's an individual conversation
+            // check the user not being blocked by the addressee
+        await this.validateBanStatus(conversation, user);
+
+        // create a new message with the fields: conversation, author = user, and text = data.text
         const message: MessageDocument = new this.messageModel({
             conversation: conversation,
             author: user,
@@ -156,34 +173,74 @@ export class ConversationMessageService
         await message.save();
 
 
-        const lists: ConversationMessageListDocument[] = await this.messageListService.getConversationLists(conversation);
+        // fetch all the members of the conversation
+        const members: ClientUserDocument[] = await this.conversationService.getMembers(conversation);
+        // for optimization purposes, fetch all the conversation message lists related to the conversation
+        const messageLists: ConversationMessageListDocument[] = await this
+            .messageListService
+            .getConversationMessageLists(conversation);
 
-        await conversation.populate('members.member');
-        for (let memberItem of conversation.members)
+        // for each member
+            // get the conversation message list from the just fetched message lists
+            // if there is no one for a particular user
+                // create a new one and attach it to the conversation and to the user as user being the owner of it
+            // create a conversation message with the fields: conversation message list, message, isRead = true(if it's the
+            // authorized user), otherwise isRead = false
+            // if it's user's conversation message
+                // put it into the result variable to be returned from the function
+
+        let result: ConversationMessageDocument = null;
+        for (let member of members)
         {
-            // @ts-ignore
-            const { member } = memberItem;
-
-            let list: ConversationMessageListDocument = lists.find(item => item.owner.id === member.id);
-            if (!list)
+            let currentMessageList = messageLists.find(item => item.owner.id === member.id);
+            if (!currentMessageList)
             {
-                list = await this.messageListService.create(member, conversation, message);
+                currentMessageList = await this.messageListService.create(member, conversation);
             }
 
-            const isUserMessage: boolean = user.id === member.id;
-            const conversationMessage: ConversationMessageDocument = await this.create(list, message, isUserMessage);
+            const isUsersMessage: boolean = user.id === member.id;
 
-            list.lastMessage = conversationMessage;
-            await list.save();
+            const conversationMessage: ConversationMessageDocument = await this.create(
+                currentMessageList,
+                message,
+                isUsersMessage
+            );
+            await conversationMessage.save();
 
-            if (isUserMessage)
+            currentMessageList.lastMessage = conversationMessage;
+            await currentMessageList.save();
+
+            if (isUsersMessage)
             {
                 result = conversationMessage;
             }
         }
 
-
         return result;
+    }
+
+    async validateBanStatus(
+        conversation: ConversationDocument,
+        user: ClientUserDocument,
+        errorMessage: string = "You've been banned by the user!"
+    )
+    {
+        if (!conversation.isIndividual)
+        {
+            return;
+        }
+
+        const addressee: ClientUserDocument = await this.conversationService.getAddressee(conversation, user);
+        if (!addressee)
+        {
+            return;
+        }
+
+        const isBanned: boolean = await this.profileService.isAddresseeBanned(addressee, user);
+        if (isBanned)
+        {
+            throw new BadRequestException(errorMessage);
+        }
     }
 
     async create(list: ConversationMessageListDocument, message: MessageDocument, isRead: boolean): Promise<ConversationMessageDocument>

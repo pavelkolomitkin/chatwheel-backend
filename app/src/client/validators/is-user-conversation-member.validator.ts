@@ -22,7 +22,7 @@ export class IsUserConversationMemberValidator implements ValidatorConstraintInt
 
     async validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> {
 
-        debugger
+        //debugger
         const user: ClientUserDocument = this.profileService.getCurrentUser()
 
         const conversation: ConversationDocument = await this.conversationService.get(value);

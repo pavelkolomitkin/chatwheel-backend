@@ -8,7 +8,6 @@ import {
 } from "../../core/schemas/conversation-message-list.schema";
 import {DateTimePipe} from "../../core/pipes/date-time.pipe";
 import {ConversationMessageService} from "../services/conversation-message.service";
-import {Conversation, ConversationDocument} from "../../core/schemas/conversation.schema";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
 import {SentMessageUserDto} from "../dto/sent-message-user.dto";
 import {SentMessageConversationDto} from "../dto/sent-message-conversation.dto";
@@ -16,7 +15,6 @@ import {EditMessageDto} from "../dto/edit-message.dto";
 import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
 import {RemoveMessageDto} from "../dto/remove-message.dto";
 import {AuthGuard} from "@nestjs/passport";
-import any = jasmine.any;
 
 @Controller('message')
 @UseGuards(AuthGuard('jwt'))
@@ -86,19 +84,28 @@ export class ConversationMessageController
     async sendToConversation(
         @CurrentUser() user: ClientUserDocument,
         @ParameterConverter({
-            model: Conversation.name,
+            model: ConversationMessageList.name,
             field: 'id',
             paramName: 'conversationId',
             sourceType: ParameterConverterSourceType.BODY
-        }, ParameterConverterPipe) conversation: ConversationDocument,
+        }, ParameterConverterPipe) messageList: ConversationMessageListDocument,
         @Body() data: SentMessageConversationDto
     )
     {
-        const message: ConversationMessageDocument = await this.service.sendToConversation(data, user, conversation);
+        const message: ConversationMessageDocument = await this.service.sendToConversation(data, user, messageList);
 
         return {
             // @ts-ignore
-            message: message.serialize()
+            message: {
+                id: message.id,
+                isRead: message.isRead,
+                message: {
+                    // @ts-ignore
+                    ...message.message.serialize(),
+                    // @ts-ignore
+                    author: message.message.author.serialize()
+                }
+            }
         };
     }
 

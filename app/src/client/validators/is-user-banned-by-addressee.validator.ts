@@ -31,7 +31,7 @@ export class IsUserBannedByAddresseeValidator implements ValidatorConstraintInte
 
     async validate(value: any, validationArguments?: ValidationArguments): Promise<boolean> {
 
-        debugger
+        //debugger
         // @ts-ignore
         const user: ClientUserDocument = this.profileService.getCurrentUser();
 
