@@ -15,7 +15,6 @@ import {ConversationMessageListService} from "./conversation-message-list.servic
 import {SentMessageUserDto} from "../dto/sent-message-user.dto";
 import {SentMessageConversationDto} from "../dto/sent-message-conversation.dto";
 import {EditMessageDto} from "../dto/edit-message.dto";
-import {RemoveMessageDto} from "../dto/remove-message.dto";
 
 @Injectable()
 export class ConversationMessageService

@@ -3,9 +3,7 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Document, Schema as MongooseSchema} from "mongoose";
 import {Conversation, ConversationDocument} from "./conversation.schema";
 import {UserDocument} from "./user.schema";
-import {createSerializer} from "../serializer/serializer";
-import {Message, MessageDocument} from "./message.schema";
-import {Exclude, Expose, Type} from "class-transformer";
+import {Exclude} from "class-transformer";
 import {ConversationMessage, ConversationMessageDocument} from "./conversation-message.schema";
 
 export type ConversationMessageListDocument = Document & ConversationMessageList;

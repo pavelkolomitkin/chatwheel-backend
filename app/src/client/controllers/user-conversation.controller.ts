@@ -11,13 +11,15 @@ import {ParameterConverterPipe} from '../../core/pipes/parameter-converter.pipe'
 import {AuthGuard} from "@nestjs/passport";
 import {ConversationMessage} from "../../core/schemas/conversation-message.schema";
 import {Message} from "../../core/schemas/message.schema";
+import {ConversationMessageListService} from "../services/conversation-message-list.service";
 
 @Controller('conversation')
 @UseGuards(AuthGuard('jwt'))
 export class UserConversationController
 {
     constructor(
-        private conversationService: UserConversationService
+        private conversationService: UserConversationService,
+        private messageListService: ConversationMessageListService
     ) {
     }
 
@@ -77,7 +79,7 @@ export class UserConversationController
         };
     }
 
-    @Get('/:id')
+    @Get(':id')
     @HttpCode(HttpStatus.OK)
     async get(
         @CurrentUser() user: ClientUserDocument,
@@ -140,7 +142,7 @@ export class UserConversationController
         };
     }
 
-    @Delete('/remove-conversation-list/:id')
+    @Delete(':id')
     @HttpCode(HttpStatus.OK)
     async removeConversation(
         @CurrentUser() user: ClientUserDocument,
@@ -149,10 +151,12 @@ export class UserConversationController
             field: 'id',
             paramName: 'id',
             sourceType: ParameterConverterSourceType.PARAM
-        }, ParameterConverterPipe) conversationList: ConversationMessageListDocument
+        }, ParameterConverterPipe) messageList: ConversationMessageListDocument
     )
     {
-        await conversationList.delete();
+
+        await this.messageListService.remove(messageList, user);
+
     }
 
 

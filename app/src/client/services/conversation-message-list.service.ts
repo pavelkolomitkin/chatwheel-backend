@@ -8,12 +8,14 @@ import {Model} from "mongoose";
 import {ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ConversationDocument} from "../../core/schemas/conversation.schema";
 import {MessageDocument} from "../../core/schemas/message.schema";
+import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
 
 @Injectable()
 export class ConversationMessageListService
 {
     constructor(
-        @InjectModel(ConversationMessageList.name) private readonly model: Model<ConversationMessageListDocument>
+        @InjectModel(ConversationMessageList.name) private readonly model: Model<ConversationMessageListDocument>,
+        @InjectModel(ConversationMessage.name) private readonly messageModel: Model<ConversationMessageDocument>
     ) {
     }
 
@@ -64,5 +66,20 @@ export class ConversationMessageListService
     isUserOwner(messageList: ConversationMessageListDocument, user: ClientUserDocument)
     {
         return (messageList.owner.id === user.id);
+    }
+
+    async remove(messageList: ConversationMessageListDocument,
+           user: ClientUserDocument)
+    {
+        await this.validateOwnership(messageList, user);
+
+        // remove all conversation messages related to the messageList
+        await this.messageModel.deleteMany({
+            messageList: messageList
+        });
+
+        // remove the messageList itself
+
+        await messageList.delete();
     }
 }
