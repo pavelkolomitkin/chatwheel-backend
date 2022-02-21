@@ -31,24 +31,35 @@ export class ConversationMessageService
     ) {    }
 
 
-    async getList(list: ConversationMessageListDocument, criteria: any, limit: number = 10)
+    async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 23)
     {
+        if (list.owner.id !== user.id)
+        {
+            throw new BadRequestException('The conversation is not found!');
+        }
 
-        const pipeline = [
+        let pipeline = [
             { $match: { messageList: list._id } },
             { $lookup: { from: 'messages', localField: 'message', foreignField: '_id', as: 'message'} },
+        ];
+
+        const criteriaFilter: any = this.getCriteriaMatchFilter(criteria);
+        if (criteriaFilter)
+        {
+            pipeline.push(criteriaFilter);
+        }
+
+        // @ts-ignore
+        pipeline = pipeline.concat([
             { $unwind: '$message' },
             { $sort: { 'message.createdAt': -1 } },
             { $project: { _id: 1 } }
-        ]
-
-        this.handleLatestMessage(pipeline, criteria);
-        this.handleMessageLastDate(pipeline, criteria)
+        ]);
 
         // @ts-ignore
         const items = await this.model.aggregate(pipeline).limit(limit);
-        const messageIds = items.map(item => item._id);
 
+        const messageIds = items.map(item => item._id);
         const messages = await this.model.find({
             _id: {
                 $in : messageIds
@@ -57,7 +68,8 @@ export class ConversationMessageService
             .populate({
                 path: 'message',
                 populate: { path: 'author' }
-            });
+            })
+            .sort({ createdAt: -1 });
 
         const result = [];
         for (let message of messages)
@@ -78,19 +90,37 @@ export class ConversationMessageService
         return result;
     }
 
-    handleMessageLastDate(pipeline: Array<any>, criteria: any)
+    getCriteriaMatchFilter(criteria: any)
+    {
+        const criteriaFilter = [];
+        this.handleLatestMessageMatchCriterion(criteriaFilter, criteria);
+        this.handleMessageLastDateMatchCriterion(criteriaFilter, criteria);
+
+        if (criteriaFilter.length > 0)
+        {
+            return { $match: {
+                    //@ts-ignore
+                    $and: criteriaFilter
+                }
+            };
+        }
+
+        return null;
+    }
+
+    handleMessageLastDateMatchCriterion(matchCriteria: any[], criteria: any)
     {
         if (criteria.lastDate)
         {
-            pipeline.push({ $match: { 'message.createdAt': { $lte: criteria.lastDate } }  });
+             matchCriteria.push({ 'message.createdAt': { $lte: criteria.lastDate }});
         }
     }
 
-    handleLatestMessage(pipeline: Array<any>, criteria: any)
+    handleLatestMessageMatchCriterion(matchCriteria: any[], criteria: any)
     {
         if (criteria.latestId)
         {
-            pipeline.push({ $match: { message: { $ne: new Types.ObjectId(criteria.latestId) } } });
+            matchCriteria.push({ _id: { $ne: new Types.ObjectId(criteria.latestId) } });
         }
     }
 

@@ -26,7 +26,7 @@ export class UserConversationController
     @HttpCode(HttpStatus.OK)
     async getList(
         @CurrentUser() user: ClientUserDocument,
-        @Query('lastDate', DateTimePipe) lastDate: Date = null,
+        @Query('lastDate') lastDate: Date = null,
         @Query('latestId') latestId: string = null
     )
     {
@@ -103,7 +103,10 @@ export class UserConversationController
                 path: 'members',
                 populate: {
                     path: 'member',
-                    model: ClientUser.name
+                    model: ClientUser.name,
+                    populate: {
+                        path: 'interests'
+                    }
                 }
             }
         });

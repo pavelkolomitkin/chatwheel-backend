@@ -1,4 +1,15 @@
-import {Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, UseGuards} from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Put,
+    Query,
+    UseGuards
+} from "@nestjs/common";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
@@ -35,11 +46,11 @@ export class ConversationMessageController
             paramName: 'listId',
             sourceType: ParameterConverterSourceType.PARAM
         }, ParameterConverterPipe) messageList: ConversationMessageListDocument,
-        @Query('lastDate', DateTimePipe) lastDate: Date,
+        @Query('lastDate') lastDate: Date,
         @Query('latestId') latestId: string
     )
     {
-        const list = await this.service.getList(messageList, { lastDate, latestId })
+        const list = await this.service.getList(user, messageList, { lastDate, latestId });
 
         return {
             // @ts-ignore

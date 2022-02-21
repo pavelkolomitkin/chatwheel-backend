@@ -10,6 +10,7 @@ export type ConversationMessageDocument = Document & ConversationMessage;
 @Exclude()
 @Schema({
     id: true,
+    timestamps: true,
     toObject: {
         virtuals: true,
     },

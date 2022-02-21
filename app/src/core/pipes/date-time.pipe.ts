@@ -6,10 +6,20 @@ export class DateTimePipe implements PipeTransform
 {
     transform(value: string, metadata: ArgumentMetadata): Date {
 
-        if (!value || (typeof value === 'object'))
+        if (!value)
         {
             return null;
         }
+
+        if (typeof value === 'object')
+        {
+            // @ts-ignore
+            if (value.constructor === Date)
+            {
+                return value;
+            }
+        }
+
         const momentValue = moment(value);
         if (momentValue.isValid())
         {
