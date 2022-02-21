@@ -1,10 +1,10 @@
 import {
     Body,
-    Controller,
+    Controller, DefaultValuePipe,
     Delete,
     Get,
     HttpCode,
-    HttpStatus,
+    HttpStatus, ParseBoolPipe,
     Post,
     Put,
     Query,
@@ -26,6 +26,7 @@ import {EditMessageDto} from "../dto/edit-message.dto";
 import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
 import {RemoveMessageDto} from "../dto/remove-message.dto";
 import {AuthGuard} from "@nestjs/passport";
+import {Message} from "../../core/schemas/message.schema";
 
 @Controller('message')
 @UseGuards(AuthGuard('jwt'))
@@ -129,31 +130,66 @@ export class ConversationMessageController
             field: 'id',
             paramName: 'messageId',
             sourceType: ParameterConverterSourceType.BODY
-        }) message: ConversationMessageDocument,
+        }, ParameterConverterPipe) message: ConversationMessageDocument,
         @Body() data: EditMessageDto
     )
     {
-        const editedMessage: ConversationMessageDocument = await this.service.editMessage(data, message);
+        const editedMessage: ConversationMessageDocument = await this.service.editMessage(data, message, user);
+
+        await editedMessage.populate(
+            {
+                path: 'message',
+                model: Message.name,
+                populate: {
+                    path: 'author',
+                    model: ClientUser.name
+                }
+            }
+        );
 
         return {
             // @ts-ignore
-            message: editedMessage.serialize()
+            message: {
+                id: editedMessage.id,
+                isRead: editedMessage.isRead,
+                message: {
+                    // @ts-ignore
+                    ...editedMessage.message.serialize(),
+                    // @ts-ignore
+                    author: editedMessage.message.author.serialize()
+                }
+            }
         };
     }
 
-    @Delete('delete')
+    @Delete(':id')
     @HttpCode(HttpStatus.OK)
     async remove(
         @CurrentUser() user: ClientUserDocument,
         @ParameterConverter({
             model: ConversationMessage.name,
             field: 'id',
-            paramName: 'messageId',
-            sourceType: ParameterConverterSourceType.BODY
-        }) message: ConversationMessageDocument,
-        @Body() data: RemoveMessageDto
+            paramName: 'id',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) message: ConversationMessageDocument,
+        @Query('removeFromOthers', new DefaultValuePipe(false), ParseBoolPipe) removeFromOthers: boolean
     )
     {
-        await this.service.removeMessage(data, message, user);
+        await this.service.removeMessage(message, user, removeFromOthers);
+    }
+
+    @Put('read-last/:listId')
+    @HttpCode(HttpStatus.OK)
+    async readLast(
+        @CurrentUser() user: ClientUserDocument,
+        @ParameterConverter({
+            model: ConversationMessageList.name,
+            field: 'id',
+            paramName: 'listId',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) messageList: ConversationMessageListDocument,
+    )
+    {
+        await this.service.readLast(messageList, user);
     }
 }

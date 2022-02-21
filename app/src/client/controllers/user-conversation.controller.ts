@@ -8,7 +8,6 @@ import {
     ConversationMessageListDocument
 } from '../../core/schemas/conversation-message-list.schema';
 import {ParameterConverterPipe} from '../../core/pipes/parameter-converter.pipe';
-import {DateTimePipe} from '../../core/pipes/date-time.pipe';
 import {AuthGuard} from "@nestjs/passport";
 import {ConversationMessage} from "../../core/schemas/conversation-message.schema";
 import {Message} from "../../core/schemas/message.schema";

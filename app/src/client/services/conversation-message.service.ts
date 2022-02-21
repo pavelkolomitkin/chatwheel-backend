@@ -30,13 +30,9 @@ export class ConversationMessageService
         private readonly conversationService: ConversationService
     ) {    }
 
-
     async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 23)
     {
-        if (list.owner.id !== user.id)
-        {
-            throw new BadRequestException('The conversation is not found!');
-        }
+        await this.messageListService.validateOwnership(list, user);
 
         let pipeline = [
             { $match: { messageList: list._id } },
@@ -249,6 +245,36 @@ export class ConversationMessageService
         return result;
     }
 
+    async validateOwnership(message: ConversationMessageDocument, user: ClientUserDocument)
+    {
+        await message.populate({
+            path: 'messageList',
+            model: ConversationMessageList.name,
+            populate: {
+                path: 'owner',
+                model: ClientUser.name
+            }
+        });
+
+        if (message.messageList.owner.id !== user.id)
+        {
+            throw new BadRequestException('The message is not found!');
+        }
+    }
+
+    async validateMessageOwnership(message: MessageDocument, user: ClientUserDocument)
+    {
+        await message.populate({
+            path: 'author',
+            model: ClientUser.name
+        });
+
+        if (message.author.id !== user.id)
+        {
+            throw new BadRequestException('The message is not found!');
+        }
+    }
+
     async validateBanStatus(
         conversation: ConversationDocument,
         user: ClientUserDocument,
@@ -286,53 +312,56 @@ export class ConversationMessageService
         return result;
     }
 
-    async editMessage(data: EditMessageDto, conversationMessage: ConversationMessageDocument)
+    async editMessage(data: EditMessageDto, conversationMessage: ConversationMessageDocument, user: ClientUserDocument)
     {
         await conversationMessage.populate('message');
 
-        const message: MessageDocument = conversationMessage.message;
-        message.text = data.text;
+        await this.validateMessageOwnership(conversationMessage.message, user);
 
+        const message: MessageDocument = conversationMessage.message;
+
+        message.text = data.text;
         await message.save();
-        conversationMessage.message = message;
+
+        await conversationMessage.save();
 
         return conversationMessage;
     }
 
-    async removeMessage(data: RemoveMessageDto, conversationMessage: ConversationMessageDocument, user: ClientUserDocument)
+    async removeMessage(conversationMessage: ConversationMessageDocument, user: ClientUserDocument, removeFromOthers: boolean = false)
     {
-        const { removeFromOthers } = data;
-
-        await conversationMessage.populate('message');
-        const message: MessageDocument = conversationMessage.message;
-
-        // remove the own conversation message
-        await conversationMessage.populate('messageList');
-        const userMessageList: ConversationMessageListDocument = conversationMessage.messageList;
-
-        await userMessageList.populate('lastMessage');
-        if (!!userMessageList.lastMessage && (userMessageList.lastMessage.id === message.id))
-        {
-            userMessageList.lastMessage = null;
-            await userMessageList.save();
-        }
-
-        await conversationMessage.remove();
-
-        // trying to remove the message from others
         if (removeFromOthers)
         {
-            await message.populate('author');
-            if (message.author.id !== user.id)
-            {
-                throw new BadRequestException('You cannot remove the message for other people!');
-            }
+            await conversationMessage.populate('message');
 
-            await this.model.remove({
-                message: message
+            const message: MessageDocument = conversationMessage.message;
+
+            await this.validateMessageOwnership(message, user);
+
+            await this.model.deleteMany({
+                message: message._id,
             });
 
-            await this.messageListService.removeAllLastMessages(message);
+            await message.delete();
         }
+        else
+        {
+            await conversationMessage.delete();
+        }
+
+        return conversationMessage;
+    }
+
+    async readLast(list: ConversationMessageListDocument, user: ClientUserDocument)
+    {
+        await this.messageListService.validateOwnership(list, user);
+
+        // update all the conversation messages related to the list "messageList" which is not read yet isRead = true
+        await this.model.updateMany({
+            messageList: list._id,
+            isRead: false
+        }, {
+            isRead: true
+        });
     }
 }

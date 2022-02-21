@@ -6,6 +6,8 @@ import {UserDocument} from "./user.schema";
 import {ConversationDocument} from "./conversation.schema";
 import {Exclude, Expose, Type} from "class-transformer";
 import {createSerializer} from "../serializer/serializer";
+import * as mongooseDelete from 'mongoose-delete';
+import {aggregate} from '../middlewares/soft-delete-entity.middleware';
 
 export type MessageDocument = Document & Message;
 
@@ -65,5 +67,8 @@ export class Message extends BaseSchema
 const MessageSchema = SchemaFactory.createForClass(Message);
 
 MessageSchema.methods.serialize = createSerializer([Message]);
+
+MessageSchema.plugin(mongooseDelete, { deletedAt : true, overrideMethods: 'all' });
+MessageSchema.pre('aggregate', aggregate);
 
 export { MessageSchema };
