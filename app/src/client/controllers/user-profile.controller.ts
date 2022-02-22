@@ -1,4 +1,4 @@
-import {Controller, Get, HttpCode, HttpStatus, UseGuards} from "@nestjs/common";
+import {Controller, Get, HttpCode, HttpStatus, Put, UseGuards} from "@nestjs/common";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
@@ -36,6 +36,50 @@ export class UserProfileController
             user: user.serialize(),
             amIBanned: await this.profileService.isAddresseeBanned(user, currentUser),
             isBanned: await this.profileService.isAddresseeBanned(currentUser, user),
+        };
+    }
+
+    @Put('ban-user/:id')
+    @HttpCode(HttpStatus.OK)
+    async banUser(
+        @CurrentUser() currentUser: ClientUserDocument,
+        @ParameterConverter({
+            model: ClientUser.name,
+            field: 'id',
+            paramName: 'id',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) addressee: ClientUserDocument
+    )
+    {
+        await this.profileService.banAddressee(currentUser, addressee);
+
+        return {
+            // @ts-ignore
+            user: addressee.serialize(),
+            amIBanned: await this.profileService.isAddresseeBanned(addressee, currentUser),
+            isBanned: await this.profileService.isAddresseeBanned(currentUser, addressee),
+        };
+    }
+
+    @Put('unban-user/:id')
+    @HttpCode(HttpStatus.OK)
+    async unbanUser(
+        @CurrentUser() currentUser: ClientUserDocument,
+        @ParameterConverter({
+            model: ClientUser.name,
+            field: 'id',
+            paramName: 'id',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) addressee: ClientUserDocument
+    )
+    {
+        await this.profileService.unbanAddressee(currentUser, addressee);
+
+        return {
+            // @ts-ignore
+            user: addressee.serialize(),
+            amIBanned: await this.profileService.isAddresseeBanned(addressee, currentUser),
+            isBanned: await this.profileService.isAddresseeBanned(currentUser, addressee),
         };
     }
 }

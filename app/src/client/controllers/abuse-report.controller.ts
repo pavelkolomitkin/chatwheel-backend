@@ -1,4 +1,4 @@
-import {Body, Controller, Post, UseGuards} from "@nestjs/common";
+import {Body, Controller, HttpCode, HttpStatus, Post, UseGuards} from "@nestjs/common";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {AbuseReportDto} from "../dto/abuse-report.dto";
@@ -21,6 +21,7 @@ export class AbuseReportController
     }
 
     @Post('')
+    @HttpCode(HttpStatus.CREATED)
     async create(
         @CurrentUser() user: ClientUserDocument,
         @ParameterConverter({
