@@ -363,4 +363,26 @@ export class ConversationMessageService
             isRead: true
         });
     }
+
+    async getNewMessageNumber(user: ClientUserDocument): Promise<Number>
+    {
+        const result = await this.model.aggregate([
+            { $lookup: { from: 'conversationmessagelists', localField: 'messageList', foreignField: '_id', as: 'messageList' } },
+            { $match: {
+                    $and: [
+                        { 'messageList.owner': user._id },
+                        { isRead: false }
+                    ]
+                }
+            },
+            { $group: { _id: null, messageNumber: { $sum: 1 } } }
+        ]);
+
+        if (result.length > 0)
+        {
+            return typeof result[0]['messageNumber'] !== 'undefined' ? result[0]['messageNumber'] : 0;
+        }
+
+        return 0;
+    }
 }

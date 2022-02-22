@@ -9,11 +9,10 @@ import {ConversationService} from "./services/conversation.service";
 import {ConversationMessageListService} from "./services/conversation-message-list.service";
 import {UserConversationService} from "./services/user-conversation.service";
 import {ConversationMessageService} from "./services/conversation-message.service";
-import {IsUserBannedByAddresseeValidator} from "./validators/is-user-banned-by-addressee.validator";
-import {IsUserConversationMemberValidator} from "./validators/is-user-conversation-member.validator";
-import {IsUserMessageAuthorValidator} from "./validators/is-user-message-author.validator";
 import {UserProfileController} from "./controllers/user-profile.controller";
 import {UserProfileService} from "./services/user-profile.service";
+import {AbuseReportService} from "./services/abuse-report.service";
+import {AbuseReportController} from "./controllers/abuse-report.controller";
 
 @Module({
     controllers: [
@@ -21,7 +20,8 @@ import {UserProfileService} from "./services/user-profile.service";
         UserProfileController,
         UserInterestController,
         ConversationMessageController,
-        UserConversationController
+        UserConversationController,
+        AbuseReportController
     ],
     providers: [
         ProfileService,
@@ -31,10 +31,7 @@ import {UserProfileService} from "./services/user-profile.service";
         ConversationMessageService,
         UserInterestService,
         UserProfileService,
-
-        IsUserBannedByAddresseeValidator,
-        IsUserConversationMemberValidator,
-        IsUserMessageAuthorValidator
+        AbuseReportService
     ]
 })
 export class ClientModule {}

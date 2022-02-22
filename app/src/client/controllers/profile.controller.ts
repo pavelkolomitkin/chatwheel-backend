@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, HttpCode, HttpStatus, Put, UseGuards} from "@nestjs/common";
+import {Body, Controller, Delete, Get, HttpCode, HttpStatus, Put, UseGuards} from "@nestjs/common";
 import {UserFullnameDto} from "../dto/user-fullname.dto";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUserDocument} from "../../core/schemas/client-user.schema";
@@ -11,13 +11,15 @@ import {Country, CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
 import {AuthGuard} from "@nestjs/passport";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
+import {ConversationMessageService} from "../services/conversation-message.service";
 
 @Controller('profile')
 @UseGuards(AuthGuard('jwt'))
 export class ProfileController
 {
     constructor(
-        private readonly service: ProfileService
+        private readonly service: ProfileService,
+        private readonly conversationMessageService: ConversationMessageService
     ) {
     }
 
@@ -152,6 +154,19 @@ export class ProfileController
         return {
             // @ts-ignore
             user: deletedUser.serialize(['mine'])
+        };
+    }
+
+    @Get('new-message-number')
+    @HttpCode(HttpStatus.OK)
+    async getNewMessageNumber(
+        @CurrentUser() user: ClientUserDocument
+    )
+    {
+        const newMessagesNumber = await this.conversationMessageService.getNewMessageNumber(user);
+
+        return {
+            newMessagesNumber
         };
     }
 

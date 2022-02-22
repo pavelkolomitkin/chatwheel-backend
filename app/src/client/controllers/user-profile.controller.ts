@@ -34,7 +34,8 @@ export class UserProfileController
         return {
             // @ts-ignore
             user: user.serialize(),
-            isBanned: await this.profileService.isAddresseeBanned(user, currentUser)
+            amIBanned: await this.profileService.isAddresseeBanned(user, currentUser),
+            isBanned: await this.profileService.isAddresseeBanned(currentUser, user),
         };
     }
 }

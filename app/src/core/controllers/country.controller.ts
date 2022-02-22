@@ -1,8 +1,7 @@
-import {Controller, Get, UseGuards} from "@nestjs/common";
+import {Controller, Get} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Country, CountryDocument} from "../schemas/country.schema";
 import {Model} from "mongoose";
-import {AuthGuard} from "@nestjs/passport";
 
 @Controller('country')
 export class CountryController

@@ -27,6 +27,8 @@ import {Conversation, ConversationSchema} from './schemas/conversation.schema';
 import {ConversationMessage, ConversationMessageSchema} from './schemas/conversation-message.schema';
 import {ConversationMessageList, ConversationMessageListSchema} from './schemas/conversation-message-list.schema';
 import {Message, MessageSchema} from './schemas/message.schema';
+import {AbuseReportTypeController} from "./controllers/abuse-report-type.controller";
+import {AbuseReportType, AbuseReportTypeSchema} from "./schemas/abuse-report-type.schema";
 
 @Global()
 @Module({
@@ -104,6 +106,10 @@ import {Message, MessageSchema} from './schemas/message.schema';
             {
                 name: BannedUser.name,
                 schema: BannedUserSchema
+            },
+            {
+                name: AbuseReportType.name,
+                schema: AbuseReportTypeSchema
             }
         ]),
 
@@ -140,7 +146,8 @@ import {Message, MessageSchema} from './schemas/message.schema';
     ],
     controllers: [
         CountryController,
-        AvatarController
+        AvatarController,
+        AbuseReportTypeController
     ],
     exports: [
         MongooseModule,

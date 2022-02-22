@@ -27,6 +27,7 @@ import {ConversationMessage, ConversationMessageDocument} from "../../core/schem
 import {RemoveMessageDto} from "../dto/remove-message.dto";
 import {AuthGuard} from "@nestjs/passport";
 import {Message} from "../../core/schemas/message.schema";
+import {AbuseReportType, AbuseReportTypeDocument} from "../../core/schemas/abuse-report-type.schema";
 
 @Controller('message')
 @UseGuards(AuthGuard('jwt'))

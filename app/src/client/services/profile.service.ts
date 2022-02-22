@@ -9,10 +9,7 @@ import {UserInterestDto} from "../dto/user-interest.dto";
 import {UserInterestDocument} from "../../core/schemas/user-interest.schema";
 import {CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
-import {REQUEST} from "@nestjs/core";
-import { Request } from 'express';
 import {BannedUser, BannedUserDocument} from "../../core/schemas/banned-user.schema";
-
 
 @Injectable()
 export class ProfileService
@@ -27,15 +24,8 @@ export class ProfileService
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
         @InjectModel(BannedUser.name) private readonly bannedModel: Model<BannedUserDocument>,
-        private readonly interestService: UserInterestService,
-        @Inject(REQUEST) private readonly request: Request
+        private readonly interestService: UserInterestService
     ) {
-    }
-
-    getCurrentUser(): ClientUserDocument
-    {
-        // @ts-ignore
-        return this.request.user;
     }
 
     async updateFullName(data: UserFullnameDto, user: ClientUserDocument): Promise<ClientUserDocument>
@@ -158,5 +148,33 @@ export class ProfileService
             applicant: user,
             banned: addressee
         });
+    }
+
+    async banAddressee(user: ClientUserDocument, addressee: ClientUserDocument)
+    {
+        try {
+            await this.bannedModel.create({
+                applicant: user,
+                banned: addressee
+            });
+        }
+        catch (error)
+        {
+            throw new BadRequestException('You have already banned this user!');
+        }
+    }
+
+    async unbanAddressee(user: ClientUserDocument, addressee: ClientUserDocument)
+    {
+        try {
+            await this.bannedModel.deleteOne({
+                applicant: user,
+                banned: addressee
+            });
+        }
+        catch (error)
+        {
+            throw new BadRequestException('You have not banned this user!');
+        }
     }
 }
