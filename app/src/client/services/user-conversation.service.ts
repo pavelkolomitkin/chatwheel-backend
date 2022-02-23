@@ -17,6 +17,11 @@ export class UserConversationService
     ) {
     }
 
+    getConversationMessageListModel()
+    {
+        return this.model;
+    }
+
     async getConversationsNewMessages(conversationMessageList: ConversationMessageListDocument[])
     {
         const ids: any[] =conversationMessageList.map(item => item._id);

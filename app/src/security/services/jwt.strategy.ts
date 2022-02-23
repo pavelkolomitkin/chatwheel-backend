@@ -2,19 +2,15 @@ import {PassportStrategy} from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {LoginPasswordService} from './login-password.service';
-import {InjectModel} from '@nestjs/mongoose';
-import {Model} from 'mongoose';
 import {ROLE_CLIENT_USER, User, UserDocument} from "../../core/schemas/user.schema";
-import * as Mongoose from "mongoose";
+import {UserService} from "./user.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy)
 {
     constructor(
         private readonly config: ConfigService,
-        private readonly userService: LoginPasswordService,
-        @InjectModel(User.name) private readonly userModel: Model<User>
+        private readonly userService: UserService
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -24,13 +20,8 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
     async validate({ id })
     {
-        const user: UserDocument = await this
-            .userModel
-            .findOne({
-                _id: new Mongoose.Types.ObjectId(id),
-                isActivated: true,
-                isBlocked: false
-            });
+        const user: UserDocument = await this.userService.getActivatedUserById(id);
+
         if (!user)
         {
             throw new UnauthorizedException();

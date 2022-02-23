@@ -15,12 +15,16 @@ import {ConversationMessageListService} from "./conversation-message-list.servic
 import {SentMessageUserDto} from "../dto/sent-message-user.dto";
 import {SentMessageConversationDto} from "../dto/sent-message-conversation.dto";
 import {EditMessageDto} from "../dto/edit-message.dto";
+import {ConversationMessageLogType} from "../../core/schemas/conversation-message-log.schema";
+import {ConversationMessageLogService} from "./conversation-message-log.service";
 
 @Injectable()
 export class ConversationMessageService
 {
     constructor(
         @InjectModel(ConversationMessage.name) private readonly model: Model<ConversationMessageDocument>,
+        private readonly messageLogService: ConversationMessageLogService,
+
         @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
         @InjectModel(ClientUser.name) private readonly userModel: Model<ClientUserDocument>,
         private readonly messageListService: ConversationMessageListService,
@@ -28,6 +32,16 @@ export class ConversationMessageService
         private readonly profileService: ProfileService,
         private readonly conversationService: ConversationService
     ) {    }
+
+    getConversationMessageModel()
+    {
+        return this.model;
+    }
+
+    getMessageModel()
+    {
+        return this.messageModel;
+    }
 
     async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 23)
     {
@@ -205,14 +219,6 @@ export class ConversationMessageService
             .messageListService
             .getConversationMessageLists(conversation);
 
-        // for each member
-            // get the conversation message list from the just fetched message lists
-            // if there is no one for a particular user
-                // create a new one and attach it to the conversation and to the user as user being the owner of it
-            // create a conversation message with the fields: conversation message list, message, isRead = true(if it's the
-            // authorized user), otherwise isRead = false
-            // if it's user's conversation message
-                // put it into the result variable to be returned from the function
 
         let result: ConversationMessageDocument = null;
         for (let member of members)
@@ -308,6 +314,8 @@ export class ConversationMessageService
 
         await result.save();
 
+        await this.messageLogService.log(message, ConversationMessageLogType.ADD);
+
         return result;
     }
 
@@ -321,6 +329,8 @@ export class ConversationMessageService
 
         message.text = data.text;
         await message.save();
+
+        await this.messageLogService.log(message, ConversationMessageLogType.EDIT);
 
         await conversationMessage.save();
 
@@ -342,6 +352,8 @@ export class ConversationMessageService
             });
 
             await message.delete();
+
+            await this.messageLogService.log(message, ConversationMessageLogType.REMOVE);
         }
         else
         {

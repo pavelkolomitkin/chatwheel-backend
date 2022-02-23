@@ -19,6 +19,9 @@ import {RestoreUserPasswordKey, RestoreUserPasswordKeySchema} from './schemas/re
 import {RestorePasswordKeyService} from './services/restore-password-key.service';
 import {RestorePasswordKeyValidator} from './validators/restore-password-key.validator';
 import {ProfileController} from "./controllers/profile.controller";
+import {UserService} from "./services/user.service";
+import {WsJwtGuard} from "./guards/ws-jwt.guard";
+import {JwtAuthService} from "./services/jwt-auth.service";
 
 @Module({
     imports: [
@@ -51,6 +54,7 @@ import {ProfileController} from "./controllers/profile.controller";
     providers: [
         JwtStrategy,
         SecurityTokenService,
+        UserService,
         MailService,
         LoginPasswordService,
         RestorePasswordKeyService,
@@ -59,11 +63,14 @@ import {ProfileController} from "./controllers/profile.controller";
         UniqueUserEmailValidator,
         UserRegisterConfirmationKeyValidator,
         RestorePasswordKeyValidator,
+        JwtAuthService,
+        WsJwtGuard,
     ],
     exports: [
         MongooseModule,
         PassportModule,
         JwtModule,
+        WsJwtGuard
     ]
 })
 export class SecurityModule {}

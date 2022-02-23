@@ -29,6 +29,10 @@ import {ConversationMessageList, ConversationMessageListSchema} from './schemas/
 import {Message, MessageSchema} from './schemas/message.schema';
 import {AbuseReportTypeController} from "./controllers/abuse-report-type.controller";
 import {AbuseReportType, AbuseReportTypeSchema} from "./schemas/abuse-report-type.schema";
+import {ConversationMessageLog, ConversationMessageLogSchema} from "./schemas/conversation-message-log.schema";
+import {UserProfileAsyncDataLog, UserProfileAsyncDataLogSchema} from "./schemas/user-profile-async-data-log.schema";
+import {UserTypingLog, UserTypingLogSchema} from "./schemas/user-typing-log.schema";
+import {SecurityModule} from "../security/security.module";
 
 @Global()
 @Module({
@@ -110,6 +114,18 @@ import {AbuseReportType, AbuseReportTypeSchema} from "./schemas/abuse-report-typ
             {
                 name: AbuseReportType.name,
                 schema: AbuseReportTypeSchema
+            },
+            {
+                name: ConversationMessageLog.name,
+                schema: ConversationMessageLogSchema
+            },
+            {
+                name: UserProfileAsyncDataLog.name,
+                schema: UserProfileAsyncDataLogSchema
+            },
+            {
+                name: UserTypingLog.name,
+                schema: UserTypingLogSchema
             }
         ]),
 
@@ -124,7 +140,8 @@ import {AbuseReportType, AbuseReportTypeSchema} from "./schemas/abuse-report-typ
                     }
                 }
             }
-        })
+        }),
+        SecurityModule
     ],
     providers: [
         {
@@ -152,7 +169,8 @@ import {AbuseReportType, AbuseReportTypeSchema} from "./schemas/abuse-report-typ
     exports: [
         MongooseModule,
         EmailServiceProvider,
-        EntityExistsValidator
+        EntityExistsValidator,
+        SecurityModule
     ]
 })
 export class CoreModule {}
