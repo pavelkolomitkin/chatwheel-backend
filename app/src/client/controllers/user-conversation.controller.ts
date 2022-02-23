@@ -12,14 +12,16 @@ import {AuthGuard} from "@nestjs/passport";
 import {ConversationMessage} from "../../core/schemas/conversation-message.schema";
 import {Message} from "../../core/schemas/message.schema";
 import {ConversationMessageListService} from "../services/conversation-message-list.service";
+import {ProfileService} from "../services/profile.service";
 
 @Controller('conversation')
 @UseGuards(AuthGuard('jwt'))
 export class UserConversationController
 {
     constructor(
-        private conversationService: UserConversationService,
-        private messageListService: ConversationMessageListService
+        private readonly conversationService: UserConversationService,
+        private readonly messageListService: ConversationMessageListService,
+        private readonly profileService: ProfileService
     ) {
     }
 
@@ -125,7 +127,12 @@ export class UserConversationController
             },
         });
 
-        //debugger
+        const addressees: ClientUserDocument[] = messageList.conversation.members
+            // @ts-ignore
+            .map(item => item.member)
+            .filter(item => item.id !== user.id);
+
+        const banStatuses = await this.profileService.getBanStatuses(user, addressees);
 
         return {
             // @ts-ignore
@@ -139,6 +146,8 @@ export class UserConversationController
                     joinTime: memberItem.joinTime
                 };
             }),
+
+            banStatuses
         };
     }
 

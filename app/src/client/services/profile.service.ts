@@ -150,6 +150,44 @@ export class ProfileService
         });
     }
 
+    async getBanStatuses(user: ClientUserDocument, addressees: ClientUserDocument[])
+    {
+        const statusItems = await this.bannedModel.aggregate([
+            { $match: { $or: [
+                        {
+                            applicant: user._id,
+                            banned: {
+                                $in: addressees.map(addressee => addressee._id)
+                            }
+                        },
+                        {
+                            applicant: {
+                                $in: addressees.map(addressee => addressee._id)
+                            },
+                            banned: user._id
+                        }
+                ] }
+            },
+            { $project: { applicant: 1, banned: 1 } }
+        ]);
+
+
+        const result = {};
+
+        for (let addressee of addressees)
+        {
+            const amIBanned = statusItems.find(item => (item.applicant.toString() === addressee.id) && (item.banned.toString() === user.id));
+            const isBanned = statusItems.find(item => (item.applicant.toString() === user.id) && (item.banned.toString() === addressee.id))
+
+            result[addressee.id] = {
+                amIBanned: !!amIBanned,
+                isBanned: !!isBanned
+            }
+        }
+
+        return result;
+    }
+
     async banAddressee(user: ClientUserDocument, addressee: ClientUserDocument)
     {
         try {
