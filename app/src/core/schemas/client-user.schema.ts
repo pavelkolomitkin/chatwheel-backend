@@ -77,6 +77,11 @@ ClientUserSchema.virtual('roles').get(function(){
     return [ROLE_CLIENT_USER];
 });
 
+ClientUserSchema.methods.populateCommonFields = async function()
+{
+    await this.populate('residenceCountry searchCountry interests geoLocation');
+}
+
 ClientUserSchema.methods.serialize = createSerializer([User, ClientUser], userAvatarThumbsHook);
 // @ts-ignore
 ClientUserSchema.plugin(require('mongoose-autopopulate'));

@@ -21,6 +21,12 @@ export class BannedUser extends BaseSchema
         ref: 'ClientUser',
     })
     banned: ClientUserDocument;
+
+    @Prop({
+        type: MongooseSchema.Types.Boolean,
+        default: false
+    })
+    isDeleted: boolean;
 }
 
 export const BannedUserSchema = SchemaFactory.createForClass(BannedUser);

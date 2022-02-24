@@ -146,7 +146,8 @@ export class ProfileService
     {
         return !!await this.bannedModel.findOne({
             applicant: user,
-            banned: addressee
+            banned: addressee,
+            isDeleted: false
         });
     }
 
@@ -158,13 +159,15 @@ export class ProfileService
                             applicant: user._id,
                             banned: {
                                 $in: addressees.map(addressee => addressee._id)
-                            }
+                            },
+                            isDeleted: false
                         },
                         {
                             applicant: {
                                 $in: addressees.map(addressee => addressee._id)
                             },
-                            banned: user._id
+                            banned: user._id,
+                            isDeleted: false
                         }
                 ] }
             },
@@ -190,29 +193,35 @@ export class ProfileService
 
     async banAddressee(user: ClientUserDocument, addressee: ClientUserDocument)
     {
-        try {
-            await this.bannedModel.create({
+        await this.bannedModel.updateOne({
                 applicant: user,
                 banned: addressee
+            },
+            {
+                applicant: user,
+                banned: addressee,
+                isDeleted: false
+            },
+            {
+                upsert: true,
+                'new': true
             });
-        }
-        catch (error)
-        {
-            throw new BadRequestException('You have already banned this user!');
-        }
     }
 
     async unbanAddressee(user: ClientUserDocument, addressee: ClientUserDocument)
     {
-        try {
-            await this.bannedModel.deleteOne({
+        await this.bannedModel.updateOne({
+            applicant: user,
+            banned: addressee
+        },
+            {
                 applicant: user,
-                banned: addressee
+                banned: addressee,
+                isDeleted: true
+            },
+            {
+                upsert: true,
+                'new': true
             });
-        }
-        catch (error)
-        {
-            throw new BadRequestException('You have not banned this user!');
-        }
     }
 }

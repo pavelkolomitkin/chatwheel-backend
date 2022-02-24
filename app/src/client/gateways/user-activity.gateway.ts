@@ -18,6 +18,7 @@ import {
 import {Conversation, ConversationDocument} from "../../core/schemas/conversation.schema";
 import {BannedUser, BannedUserDocument} from "../../core/schemas/banned-user.schema";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
+import {ProfileService} from "../services/profile.service";
 
 @Injectable()
 @WebSocketGateway({
@@ -30,6 +31,9 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
     static USER_HAS_BANNED_ME = 'user_has_banned_me';
     static USER_HAS_UNBANNED_ME = 'user_has_unbanned_me';
 
+    static I_HAS_BANNED_USER = 'i_has_banned_user';
+    static I_HAS_UNBANNED_USER = 'i_has_unbanned_user';
+
     @WebSocketServer()
     server: Server;
 
@@ -38,6 +42,7 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
         @InjectModel(ConversationMessageList.name) private readonly messageListModel: Model<ConversationMessageListDocument>,
         @InjectModel(BannedUser.name) private readonly bannedUserModel: Model<BannedUserDocument>,
         @InjectModel(ClientUser.name) private readonly clientUserModel: Model<ClientUser>,
+        private readonly profileService: ProfileService,
 
         private readonly guard: WsJwtGuard
     ) {
@@ -98,24 +103,69 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
         client.banStream = this.bannedUserModel.watch([
             {
                 $match: {
-                    'operationType': {
-                        $in: ['insert', 'delete']
-                    },
-                    'fullDocument.banned': new Types.ObjectId(user.id)
+                    $or: [
+                        { 'fullDocument.applicant' : new Types.ObjectId(user.id) },
+                        { 'fullDocument.banned' : new Types.ObjectId(user.id)}
+                    ],
                 }
             }
-        ]);
+        ], { fullDocument: 'updateLookup' });
 
         // @ts-ignore
         client.banStream.on('change', async (data) => {
 
-            const { fullDocument, operationType } = data;
+            const { fullDocument } = data;
+            const { isDeleted } = fullDocument;
 
-            const eventName = (operationType === 'insert') ? UserActivityGateway.USER_HAS_BANNED_ME :
-                UserActivityGateway.USER_HAS_UNBANNED_ME;
+
+            let eventName: string = null;
+            let targetUser: ClientUserDocument = null;
+            let amIBanned: boolean = false;
+            let isUserBanned: boolean = false;
+
+            if (fullDocument.applicant.toString() === user.id)
+            {
+                if (!isDeleted)
+                {
+                    eventName = UserActivityGateway.I_HAS_BANNED_USER;
+                    isUserBanned = true;
+                }
+                else
+                {
+                    eventName = UserActivityGateway.I_HAS_UNBANNED_USER;
+                    isUserBanned = false;
+                }
+                const userId = fullDocument.banned.toString();
+
+                targetUser = await this.clientUserModel.findById(userId);
+                amIBanned = await this.profileService.isAddresseeBanned(targetUser, user);
+            }
+            else
+            {
+                if (!isDeleted)
+                {
+                    eventName = UserActivityGateway.USER_HAS_BANNED_ME;
+                    amIBanned = true;
+                }
+                else
+                {
+                    eventName = UserActivityGateway.USER_HAS_UNBANNED_ME;
+                    amIBanned = false;
+                }
+
+                const userId = fullDocument.applicant.toString();
+                targetUser = await this.clientUserModel.findById(userId);
+                isUserBanned = await this.profileService.isAddresseeBanned(user, targetUser);
+            }
+
+            // @ts-ignore
+            await targetUser.populateCommonFields();
 
             client.emit(eventName, {
-                user: fullDocument.user.id
+                // @ts-ignore
+                user: targetUser.serialize(),
+                amIBanned: amIBanned,
+                isBanned: isUserBanned
             });
         });
     }
