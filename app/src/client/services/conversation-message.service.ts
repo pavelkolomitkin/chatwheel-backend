@@ -179,6 +179,8 @@ export class ConversationMessageService
         await userMessageList.save();
         await addresseeMessageList.save();
 
+        await this.messageLogService.log(message, ConversationMessageLogType.ADD);
+
         return userConversationMessage;
     }
 
@@ -236,7 +238,6 @@ export class ConversationMessageService
                 message,
                 isUsersMessage
             );
-            await conversationMessage.save();
 
             currentMessageList.lastMessage = conversationMessage;
             await currentMessageList.save();
@@ -246,6 +247,8 @@ export class ConversationMessageService
                 result = conversationMessage;
             }
         }
+
+        await this.messageLogService.log(message, ConversationMessageLogType.ADD);
 
         return result;
     }
@@ -314,8 +317,6 @@ export class ConversationMessageService
 
         await result.save();
 
-        await this.messageLogService.log(message, ConversationMessageLogType.ADD);
-
         return result;
     }
 
@@ -330,9 +331,9 @@ export class ConversationMessageService
         message.text = data.text;
         await message.save();
 
-        await this.messageLogService.log(message, ConversationMessageLogType.EDIT);
-
         await conversationMessage.save();
+
+        await this.messageLogService.log(message, ConversationMessageLogType.EDIT);
 
         return conversationMessage;
     }

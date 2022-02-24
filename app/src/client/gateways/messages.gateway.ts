@@ -97,6 +97,7 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
             if (fullDocument.type === ConversationMessageLogType.ADD)
             {
+                debugger
                 await this.handleAddedMessage(conversationMessage, user, client);
                 return;
             }
@@ -205,6 +206,21 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
             }
         });
 
+        await conversationMessage
+            .messageList
+            .populate({
+                path: 'lastMessage',
+                model: ConversationMessage.name,
+                populate: {
+                    path: 'message',
+                    model: Message.name,
+                    populate: {
+                        path: 'author',
+                        model: ClientUser.name
+                    }
+                }
+            });
+
         const messageNumber = await this
             .conversationService
             .getConversationsNewMessages([conversationMessage.messageList]);
@@ -229,7 +245,7 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
                     (memberItem) => {
                         return {
                             // @ts-ignore
-                            member: memberItem.serialize(),
+                            member: memberItem.member.serialize(),
                             // @ts-ignore
                             joinTime: memberItem.joinTime
                         };
