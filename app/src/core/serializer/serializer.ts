@@ -5,7 +5,7 @@ const serialize = function(modelClass, groups: string[] = []) {
     const plainObject = this.toObject();
 
     //const result = plainToClass(modelClass, plainObject, { groups: groups });
-    const result = plainToInstance(modelClass, plainObject, { groups: groups });
+    const result = plainToInstance(modelClass, plainObject, { groups: groups});
     return result
 };
 

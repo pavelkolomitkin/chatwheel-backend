@@ -14,7 +14,7 @@ export class ParameterConverterPipe implements PipeTransform
     {
 
         let paramValue = value.value;
-        let { model, field } = value;
+        let { model, field, required } = value;
 
         if (field == 'id')
         {
@@ -33,8 +33,11 @@ export class ParameterConverterPipe implements PipeTransform
             //debugger
         }
 
-        if (!result) {
-            throw new NotFoundException(`'${model}' with ${field} = ${paramValue} was not found!`);
+        if (required)
+        {
+            if (!result) {
+                throw new NotFoundException(`'${model}' with ${field} = ${paramValue} was not found!`);
+            }
         }
 
         return result;

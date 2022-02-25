@@ -1,4 +1,4 @@
-import {ValidationArguments, ValidatorConstraintInterface} from "class-validator";
+import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from "class-validator";
 import {Injectable} from "@nestjs/common";
 import {RestorePasswordKeyService} from "../services/restore-password-key.service";
 
@@ -14,6 +14,7 @@ export class RestorePasswordKeyValidator implements ValidatorConstraintInterface
 
     async validate(value: string, validationArguments?: ValidationArguments): Promise<boolean> {
 
+        debugger
         return await this.service.isKeyValid(value);
     }
 

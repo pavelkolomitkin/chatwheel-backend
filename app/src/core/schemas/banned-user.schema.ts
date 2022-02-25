@@ -1,7 +1,9 @@
 import {BaseSchema} from "./base.schema";
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {ClientUserDocument} from "./client-user.schema";
-import {Schema as MongooseSchema} from "mongoose";
+import {Document, Schema as MongooseSchema} from "mongoose";
+
+export type BannedUserDocument = Document & BannedUser;
 
 @Schema({
     timestamps: true,
@@ -19,6 +21,12 @@ export class BannedUser extends BaseSchema
         ref: 'ClientUser',
     })
     banned: ClientUserDocument;
+
+    @Prop({
+        type: MongooseSchema.Types.Boolean,
+        default: false
+    })
+    isDeleted: boolean;
 }
 
 export const BannedUserSchema = SchemaFactory.createForClass(BannedUser);

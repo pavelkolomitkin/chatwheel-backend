@@ -4,7 +4,7 @@ import {UserInterestDocument} from "../../core/schemas/user-interest.schema";
 import {AuthGuard} from "@nestjs/passport";
 
 @Controller('interest')
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard('jwt'))
 export class UserInterestController
 {
     constructor(
