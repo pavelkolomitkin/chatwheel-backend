@@ -43,7 +43,7 @@ export class ConversationMessageService
         return this.messageModel;
     }
 
-    async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 23)
+    async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 10)
     {
         await this.messageListService.validateOwnership(list, user);
 
@@ -180,6 +180,7 @@ export class ConversationMessageService
         await addresseeMessageList.save();
 
         await this.messageLogService.log(message, ConversationMessageLogType.ADD);
+        await this.messageLogService.logMessageNumberChanged([addressee]);
 
         return userConversationMessage;
     }
@@ -249,6 +250,7 @@ export class ConversationMessageService
         }
 
         await this.messageLogService.log(message, ConversationMessageLogType.ADD);
+        await this.messageLogService.logMessageNumberChanged(members.filter(item => item.id !== user.id));
 
         return result;
     }
@@ -355,6 +357,13 @@ export class ConversationMessageService
             await message.delete();
 
             await this.messageLogService.log(message, ConversationMessageLogType.REMOVE);
+            // @ts-ignore
+            const notifyingUpdateMessageNumberUsers = message.conversation.members
+                // @ts-ignore
+                .map(item => item.member)
+                .filter(item => item.id !== user.id);
+
+            await this.messageLogService.logMessageNumberChanged(notifyingUpdateMessageNumberUsers);
         }
         else
         {
@@ -375,6 +384,8 @@ export class ConversationMessageService
         }, {
             isRead: true
         });
+
+        await this.messageLogService.logMessageNumberChanged([user]);
     }
 
     async getNewMessageNumber(user: ClientUserDocument): Promise<Number>

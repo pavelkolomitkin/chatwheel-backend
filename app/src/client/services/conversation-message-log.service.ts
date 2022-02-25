@@ -35,8 +35,6 @@ export class ConversationMessageLogService
             }
         });
 
-        const memberIds: any[] = [];
-
         for (let memberItem of message.conversation.members)
         {
             // @ts-ignore
@@ -56,21 +54,28 @@ export class ConversationMessageLogService
                     'new': true
                 }
             );
-
-            memberIds.push(member._id);
         }
+    }
 
-        await this.userProfileAsyncDataModel.updateMany(
-            {
-                user: {
-                    $in: memberIds
+    async logMessageNumberChanged(users: ClientUser[])
+    {
+        for (let user of users)
+        {
+            await this.userProfileAsyncDataModel.updateOne(
+                {
+                    user: user,
+                },
+                {
+                    $set: {
+                        user: user,
+                        messageNumberChanged: new Date()
+                    }
                 }
-            },
-            {
-                $set: {
-                    messageNumberChanged: new Date()
-                }
-            }
-        );
+                ,
+                {
+                    upsert: true,
+                    'new': true
+                });
+        }
     }
 }

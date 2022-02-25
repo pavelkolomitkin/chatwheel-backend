@@ -14,26 +14,40 @@ export class ConversationService
 
     async getIndividual(user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationDocument | null>
     {
-        return this.model.findOne({
-            $and: [
-                {
-                    members: {
-                        $all: [
-                            { $elemMatch: { member: user._id }},
-                            { $elemMatch: { member: addressee._id }}
-                        ]
-                    }
+        const conversationItems = await this.model.aggregate([
+            {
+                $match: {
+                    $and: [
+                        {
+                            members: {
+                                $all: [
+                                    { $elemMatch: {member: user._id} },
+                                    { $elemMatch: {member: addressee._id} }
+                                ]
+                            }
+                        },
+                        {
+                            members: {
+                                $size: 2
+                            }
+                        },
+                        {
+                            isIndividual: true
+                        }
+                    ]
                 },
-                {
-                    members: {
-                        $size: 2
-                    }
-                },
-                {
-                    isIndividual: true
-                }
-            ]
-        });
+            },
+            { $project: { _id: 1 } }
+        ])
+            .limit(1);
+
+        if (conversationItems.length === 0)
+        {
+            return null;
+        }
+
+
+        return this.model.findById(conversationItems[0]._id);
     }
 
     async createIndividual(user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationDocument>

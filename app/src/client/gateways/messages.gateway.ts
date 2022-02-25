@@ -97,7 +97,6 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
             if (fullDocument.type === ConversationMessageLogType.ADD)
             {
-                debugger
                 await this.handleAddedMessage(conversationMessage, user, client);
                 return;
             }
@@ -116,10 +115,13 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
             {
                 $match: {
                     "updateDescription.updatedFields.messageNumberChanged": { $exists: true },
-                    operationType: 'update'
+                    'fullDocument.user': user._id,
+                    operationType: {
+                        $in: ['insert', 'update', 'delete']
+                    }
                 }
             }
-        ]);
+        ], { fullDocument: 'updateLookup' });
 
         // @ts-ignore
         client.messageNumberChangedStream.on('change', async (data) => {
@@ -260,12 +262,19 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
     async handleEditedMessage(conversationMessage: ConversationMessageDocument, user: ClientUserDocument, client: Socket)
     {
+        await conversationMessage.message.populate('author');
+
         const payload = {
             id: conversationMessage.id,
             isRead: conversationMessage.isRead,
             messageList: conversationMessage.messageList.toString(),
             // @ts-ignore
-            message: conversationMessage.message.serialize()
+            message: {
+                // @ts-ignore
+                ...conversationMessage.message.serialize(),
+                // @ts-ignore
+                author: conversationMessage.message.author.serialize()
+            }
         };
 
         client.emit(MessagesGateway.MESSAGE_EDITED_EVENT, payload);
