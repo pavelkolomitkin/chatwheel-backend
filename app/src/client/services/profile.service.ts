@@ -151,6 +151,21 @@ export class ProfileService
         });
     }
 
+    async validateBanStatus(user: ClientUserDocument, addressee: ClientUserDocument)
+    {
+        const isAddresseeBanned: boolean = await this.isAddresseeBanned(user, addressee);
+        if (isAddresseeBanned)
+        {
+            throw new BadRequestException(`You've banned this user!`);
+        }
+
+        const isUserBanned: boolean = await this.isAddresseeBanned(addressee, user);
+        if (isUserBanned)
+        {
+            throw new BadRequestException(`You've benn banned by this user!`);
+        }
+    }
+
     async getBanStatuses(user: ClientUserDocument, addressees: ClientUserDocument[])
     {
         const statusItems = await this.bannedModel.aggregate([
@@ -223,5 +238,41 @@ export class ProfileService
                 upsert: true,
                 'new': true
             });
+    }
+
+    async getById(id: string)
+    {
+        return this.model.findById(id);
+    }
+
+    async incrementCallGatewayConnectionNumber(user: ClientUserDocument)
+    {
+        await this.model.findOneAndUpdate(
+            {
+                _id: user._id,
+            },
+            {
+                $inc: {
+                    callOpenConnectionNumber: 1
+                }
+            }
+        )
+    }
+
+    async decrementCallGatewayConnectionNumber(user: ClientUserDocument)
+    {
+        await this.model.findOneAndUpdate(
+            {
+                _id: user._id,
+                callOpenConnectionNumber: {
+                    $gt: 0
+                }
+            },
+            {
+                $inc: {
+                    callOpenConnectionNumber: -1
+                }
+            }
+        )
     }
 }

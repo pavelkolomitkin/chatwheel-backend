@@ -69,6 +69,13 @@ export class ClientUser
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'UserInterest' }],
     })
     interests: UserInterestDocument[];
+
+
+    @Prop({
+        type: MongooseSchema.Types.Number,
+        default: 0
+    })
+    callOpenConnectionNumber: Number;
 }
 
 const ClientUserSchema = SchemaFactory.createForClass(ClientUser);
@@ -76,6 +83,10 @@ const ClientUserSchema = SchemaFactory.createForClass(ClientUser);
 ClientUserSchema.virtual('roles').get(function(){
     return [ROLE_CLIENT_USER];
 });
+
+ClientUserSchema.methods.isConnectedForCalls = function () {
+    return (this.callOpenConnectionNumber > 0);
+}
 
 ClientUserSchema.methods.populateCommonFields = async function()
 {

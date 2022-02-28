@@ -33,6 +33,9 @@ import {ConversationMessageLog, ConversationMessageLogSchema} from "./schemas/co
 import {UserProfileAsyncDataLog, UserProfileAsyncDataLogSchema} from "./schemas/user-profile-async-data-log.schema";
 import {UserTypingLog, UserTypingLogSchema} from "./schemas/user-typing-log.schema";
 import {SecurityModule} from "../security/security.module";
+import {Call, CallSchema} from "./schemas/call.schema";
+import {CallMember, CallMemberSchema} from "./schemas/call-member.schema";
+import {CallMemberLink, CallMemberLinkSchema} from "./schemas/call-member-link.schema";
 
 @Global()
 @Module({
@@ -126,6 +129,18 @@ import {SecurityModule} from "../security/security.module";
             {
                 name: UserTypingLog.name,
                 schema: UserTypingLogSchema
+            },
+            {
+                name: Call.name,
+                schema: CallSchema
+            },
+            {
+                name: CallMember.name,
+                schema: CallMemberSchema
+            },
+            {
+                name: CallMemberLink.name,
+                schema: CallMemberLinkSchema
             }
         ]),
 

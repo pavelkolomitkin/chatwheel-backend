@@ -16,6 +16,11 @@ import {AbuseReportController} from './controllers/abuse-report.controller';
 import {MessagesGateway} from './gateways/messages.gateway';
 import {ConversationMessageLogService} from "./services/conversation-message-log.service";
 import {UserActivityGateway} from "./gateways/user-activity.gateway";
+import {CallController} from "./controllers/call.controller";
+import {CallsGateway} from "./gateways/calls.gateway";
+import {CallService} from "./services/call.service";
+import {CallMemberService} from "./services/call-member.service";
+import {CallMemberLinkService} from "./services/call-member-link.service";
 
 @Module({
     controllers: [
@@ -24,7 +29,8 @@ import {UserActivityGateway} from "./gateways/user-activity.gateway";
         UserInterestController,
         ConversationMessageController,
         UserConversationController,
-        AbuseReportController
+        AbuseReportController,
+        CallController
     ],
     providers: [
         ProfileService,
@@ -36,9 +42,13 @@ import {UserActivityGateway} from "./gateways/user-activity.gateway";
         UserProfileService,
         AbuseReportService,
         ConversationMessageLogService,
+        CallService,
+        CallMemberService,
+        CallMemberLinkService,
 
         MessagesGateway,
         UserActivityGateway,
+        CallsGateway
     ]
 })
 export class ClientModule {}
