@@ -50,8 +50,6 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     async handleConnection(client: Socket, ...args: any[]) {
 
-        await this.incrementUserConnectionNumber(client, args);
-
         this.handleClientConnected(client, args);
 
         this.handleIncomingCalls(client, args);
@@ -71,22 +69,6 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         client.emit(CallsGateway.CALL_CLIENT_CONNECTED, {
             id: client.id
         });
-    }
-
-    async incrementUserConnectionNumber(client, args)
-    {
-        // @ts-ignore
-        const { user } = client;
-
-        await this.profileService.incrementCallGatewayConnectionNumber(user);
-    }
-
-    async decrementUserConnectionNumber(client)
-    {
-        // @ts-ignore
-        const { user } = client;
-
-        await this.profileService.decrementCallGatewayConnectionNumber(user);
     }
 
     handleIncomingCalls(client: Socket, ...args: any[])
@@ -135,7 +117,7 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
             const payload: any = {
                 // @ts-ignore
-                call: call.serialize(),
+                ...call.serialize(),
                 members: []
             };
 
@@ -183,9 +165,9 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // @ts-ignore
         client.memberConnectionStream.on('change', async (data) => {
 
-            const { fullDocument: { id } } = data;
+            const { fullDocument: { _id } } = data;
 
-            const payload = await this.getCallMemberLinkPayload(id);
+            const payload = await this.getCallMemberLinkPayload(_id);
 
             client.emit(CallsGateway.CALL_MEMBER_IS_CONNECTING, payload);
         });
@@ -217,9 +199,9 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // @ts-ignore
         client.memberConnectedStream.on('change', async (data) => {
 
-            const { fullDocument: { id } } = data;
+            const { fullDocument: { _id } } = data;
 
-            const payload = await this.getCallMemberLinkPayload(id);
+            const payload = await this.getCallMemberLinkPayload(_id);
 
             client.emit(CallsGateway.CALL_MEMBER_CONNECTED, payload);
         });
@@ -240,7 +222,7 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
                         $match: {
                             'fullDocument.addressee': user._id,
                             'fullDocument.status': CallMemberLinkStatus.REJECTED,
-                            'operationType': 'update'
+                            'operationType': 'insert'
                         }
                     }
                 ],
@@ -251,9 +233,9 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // @ts-ignore
         client.memberRejectedStream.on('change', async (data) => {
 
-            const { fullDocument: { id } } = data;
+            const { fullDocument: { _id } } = data;
 
-            const payload = await this.getCallMemberLinkPayload(id);
+            const payload = await this.getCallMemberLinkPayload(_id);
 
             client.emit(CallsGateway.CALL_MEMBER_REJECTED, payload);
         });
@@ -288,9 +270,9 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // @ts-ignore
         client.memberHungUpStream.on('change', async (data) => {
 
-            const { fullDocument: { id } } = data;
+            const { fullDocument: { _id } } = data;
 
-            const payload = await this.getCallMemberLinkPayload(id);
+            const payload = await this.getCallMemberLinkPayload(_id);
 
             client.emit(CallsGateway.CALL_MEMBER_HUNG_UP, payload);
         });
@@ -311,6 +293,7 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const result: any = {
             // @ts-ignore
             ...link.serialize(),
+            call: link.call.toString(),
             // @ts-ignore
             initiator: link.initiator.serialize(),
             // @ts-ignore
@@ -321,8 +304,6 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
 
     async handleDisconnect(client: Socket) {
-
-        await this.decrementUserConnectionNumber(client);
 
         [
             'memberConnectedStream',
@@ -382,10 +363,6 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     {
         // @ts-ignore
         const { user } = client;
-        if (user.isConnectedForCalls())
-        {
-            return;
-        }
 
         const member: CallMemberDocument = await this.callMemberService.getBusyMember(user);
         if (!member)

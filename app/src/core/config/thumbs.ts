@@ -13,6 +13,10 @@ export const config = {
             width: 50,
             height: 50
         },
+        mediumMedium: {
+            width: 70,
+            height: 70
+        },
         medium: {
             width: 150,
             height: 150

@@ -101,7 +101,6 @@ export class CallMemberService
             user: user,
             status: {
                 $in: [
-                    CallMemberStatus.IN_PENDING,
                     CallMemberStatus.CONNECTING,
                     CallMemberStatus.CONNECTED,
                 ]

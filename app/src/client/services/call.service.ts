@@ -32,7 +32,6 @@ export class CallService
     async initiate(initiator: ClientUserDocument, addressee: ClientUserDocument, data: InitiateCallDto): Promise<CallDocument>
     {
         await this.profileService.validateBanStatus(initiator, addressee);
-        await this.validateUserAvailability(addressee);
 
         const result: CallDocument = new this.model({
             isDirect: data.isDirect,
@@ -190,14 +189,6 @@ export class CallService
     async validateUserAvailability(user: ClientUserDocument)
     {
         const errorMessage: string = 'The user is not available for a call!';
-
-        // if the user isn't connected for calls
-            // throw an error "The user is not available"
-        // @ts-ignore
-        if (!user.isConnectedForCalls())
-        {
-            throw new BadRequestException(errorMessage);
-        }
 
         // ONLINE USER AVAILABILITY
 

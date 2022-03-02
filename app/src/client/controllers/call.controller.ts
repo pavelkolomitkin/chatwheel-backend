@@ -41,7 +41,7 @@ export class CallController
 
         const result: any = {
             // @ts-ignore
-            call: call.serialize(),
+            ...call.serialize(),
             members: []
         };
 

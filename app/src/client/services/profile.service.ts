@@ -244,35 +244,4 @@ export class ProfileService
     {
         return this.model.findById(id);
     }
-
-    async incrementCallGatewayConnectionNumber(user: ClientUserDocument)
-    {
-        await this.model.findOneAndUpdate(
-            {
-                _id: user._id,
-            },
-            {
-                $inc: {
-                    callOpenConnectionNumber: 1
-                }
-            }
-        )
-    }
-
-    async decrementCallGatewayConnectionNumber(user: ClientUserDocument)
-    {
-        await this.model.findOneAndUpdate(
-            {
-                _id: user._id,
-                callOpenConnectionNumber: {
-                    $gt: 0
-                }
-            },
-            {
-                $inc: {
-                    callOpenConnectionNumber: -1
-                }
-            }
-        )
-    }
 }
