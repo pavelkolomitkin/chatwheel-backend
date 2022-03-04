@@ -28,6 +28,7 @@ import {
     UserProfileAsyncDataLog,
     UserProfileAsyncDataLogDocument
 } from "../../core/schemas/user-profile-async-data-log.schema";
+import {Call} from "../../core/schemas/call.schema";
 
 
 @Injectable()
@@ -190,7 +191,7 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
     async handleAddedMessage(conversationMessage: ConversationMessageDocument, user: ClientUserDocument, client: Socket)
     {
-        await conversationMessage.message.populate('author');
+        await conversationMessage.message.populate(['author', 'call']);
 
         await conversationMessage.populate({
             path: 'messageList',
@@ -216,10 +217,14 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
                 populate: {
                     path: 'message',
                     model: Message.name,
-                    populate: {
+                    populate: [{
                         path: 'author',
                         model: ClientUser.name
-                    }
+                    },
+                        {
+                            path: 'call',
+                            model: Call.name
+                        }]
                 }
             });
 
@@ -232,12 +237,8 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
             message: {
                 id: conversationMessage.id,
                 isRead: conversationMessage.isRead,
-                message: {
-                    // @ts-ignore
-                    ...conversationMessage.message.serialize(),
-                    // @ts-ignore
-                    author: conversationMessage.message.author.serialize()
-                },
+                // @ts-ignore
+                message: conversationMessage.message.serialize(),
             },
             // @ts-ignore
             messageList: {
@@ -262,19 +263,14 @@ export class MessagesGateway implements OnGatewayInit, OnGatewayConnection, OnGa
 
     async handleEditedMessage(conversationMessage: ConversationMessageDocument, user: ClientUserDocument, client: Socket)
     {
-        await conversationMessage.message.populate('author');
+        await conversationMessage.message.populate(['author', 'call']);
 
         const payload = {
             id: conversationMessage.id,
             isRead: conversationMessage.isRead,
             messageList: conversationMessage.messageList.toString(),
             // @ts-ignore
-            message: {
-                // @ts-ignore
-                ...conversationMessage.message.serialize(),
-                // @ts-ignore
-                author: conversationMessage.message.author.serialize()
-            }
+            message: conversationMessage.message.serialize(),
         };
 
         client.emit(MessagesGateway.MESSAGE_EDITED_EVENT, payload);

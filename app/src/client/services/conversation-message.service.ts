@@ -10,13 +10,14 @@ import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.sch
 import {ProfileService} from "./profile.service";
 import {ConversationDocument} from "../../core/schemas/conversation.schema";
 import {ConversationService} from "./conversation.service";
-import {Message, MessageDocument} from "../../core/schemas/message.schema";
+import {Message, MessageDocument, MessageTypes} from "../../core/schemas/message.schema";
 import {ConversationMessageListService} from "./conversation-message-list.service";
 import {SentMessageUserDto} from "../dto/sent-message-user.dto";
 import {SentMessageConversationDto} from "../dto/sent-message-conversation.dto";
 import {EditMessageDto} from "../dto/edit-message.dto";
 import {ConversationMessageLogType} from "../../core/schemas/conversation-message-log.schema";
 import {ConversationMessageLogService} from "./conversation-message-log.service";
+import {Call, CallDocument, CallStatus} from "../../core/schemas/call.schema";
 
 @Injectable()
 export class ConversationMessageService
@@ -43,7 +44,7 @@ export class ConversationMessageService
         return this.messageModel;
     }
 
-    async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 10)
+    async getList(user: ClientUserDocument, list: ConversationMessageListDocument, criteria: any, limit: number = 30)
     {
         await this.messageListService.validateOwnership(list, user);
 
@@ -76,7 +77,7 @@ export class ConversationMessageService
         })
             .populate({
                 path: 'message',
-                populate: { path: 'author' }
+                populate: ['author', 'call']
             })
             .sort({ createdAt: -1 });
 
@@ -89,9 +90,6 @@ export class ConversationMessageService
                 // @ts-ignore
                 message: message.message.serialize()
             };
-
-            // @ts-ignore
-            item.message.author = message.message.author.serialize();
 
             result.push(item);
         }
@@ -133,7 +131,7 @@ export class ConversationMessageService
         }
     }
 
-    async sendToUser(data: SentMessageUserDto, user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationMessageDocument>
+    async sendTextToUser(data: SentMessageUserDto, user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationMessageDocument>
     {
         const isUserBanned: boolean = await this.profileService.isAddresseeBanned(addressee, user);
         if (isUserBanned)
@@ -141,6 +139,30 @@ export class ConversationMessageService
             throw new BadRequestException("You've been banned by the user!");
         }
 
+        // create a new message
+        const newMessage: MessageDocument = new this.messageModel({
+            author: user,
+            text: data.text
+        });
+
+        return await this.sendToUser(newMessage, user, addressee);
+    }
+
+
+
+    async sendCallToUser(call: CallDocument, user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationMessageDocument>
+    {
+        // create a new message
+        const newMessage: MessageDocument = new this.messageModel({
+            call: call,
+            type: Message.getTypeByCall(call)
+        });
+
+        return await this.sendToUser(newMessage, user, addressee);
+    }
+
+    async sendToUser(message: MessageDocument, user: ClientUserDocument, addressee: ClientUserDocument): Promise<ConversationMessageDocument>
+    {
         let conversation: ConversationDocument = await this.conversationService.getIndividual(user, addressee);
         if (!conversation)
         {
@@ -159,12 +181,7 @@ export class ConversationMessageService
             addresseeMessageList = await this.messageListService.create(addressee, conversation);
         }
 
-        // create a new message
-        const message: MessageDocument = new this.messageModel({
-            conversation: conversation,
-            author: user,
-            text: data.text
-        })
+        message.conversation = conversation;
         await message.save();
 
         // create conversation messages
@@ -185,7 +202,30 @@ export class ConversationMessageService
         return userConversationMessage;
     }
 
-    async sendToConversation(data: SentMessageConversationDto, user: ClientUserDocument, messageList: ConversationMessageListDocument)
+    async sendTextToConversation(data: SentMessageConversationDto, user: ClientUserDocument, messageList: ConversationMessageListDocument)
+        : Promise<ConversationMessageDocument>
+    {
+        const newMessage: MessageDocument = new this.messageModel({
+            author: user,
+            text: data.text
+        });
+
+        return await this.sendToConversation(newMessage, user, messageList);
+    }
+
+    async sendCallToConversation(call: CallDocument, user: ClientUserDocument, messageList: ConversationMessageListDocument)
+        : Promise<ConversationMessageDocument>
+    {
+        const newMessage: MessageDocument = new this.messageModel({
+            author: user,
+            call: call,
+            type: Message.getTypeByCall(call)
+        });
+
+        return await this.sendToConversation(newMessage, user, messageList);
+    }
+
+    async sendToConversation(message: MessageDocument, user: ClientUserDocument, messageList: ConversationMessageListDocument)
         : Promise<ConversationMessageDocument>
     {
         // validated the conversation message list in order to check whether the user is an owner of the list
@@ -207,11 +247,7 @@ export class ConversationMessageService
         await this.validateBanStatus(conversation, user);
 
         // create a new message with the fields: conversation, author = user, and text = data.text
-        const message: MessageDocument = new this.messageModel({
-            conversation: conversation,
-            author: user,
-            text: data.text
-        });
+        message.conversation = conversation;
         await message.save();
 
 
@@ -322,6 +358,14 @@ export class ConversationMessageService
         return result;
     }
 
+    validateEditMessageType(message: MessageDocument)
+    {
+        if (message.type !== MessageTypes.TEXT)
+        {
+            throw new BadRequestException(`You can't edit or delete this message!`);
+        }
+    }
+
     async editMessage(data: EditMessageDto, conversationMessage: ConversationMessageDocument, user: ClientUserDocument)
     {
         await conversationMessage.populate('message');
@@ -329,6 +373,7 @@ export class ConversationMessageService
         await this.validateMessageOwnership(conversationMessage.message, user);
 
         const message: MessageDocument = conversationMessage.message;
+        this.validateEditMessageType(message);
 
         message.text = data.text;
         await message.save();
@@ -342,12 +387,13 @@ export class ConversationMessageService
 
     async removeMessage(conversationMessage: ConversationMessageDocument, user: ClientUserDocument, removeFromOthers: boolean = false)
     {
+        await conversationMessage.populate('message');
+
+        const message: MessageDocument = conversationMessage.message;
+        this.validateEditMessageType(message);
+
         if (removeFromOthers)
         {
-            await conversationMessage.populate('message');
-
-            const message: MessageDocument = conversationMessage.message;
-
             await this.validateMessageOwnership(message, user);
 
             await this.model.deleteMany({

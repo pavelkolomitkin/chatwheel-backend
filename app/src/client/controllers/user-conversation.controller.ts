@@ -13,6 +13,7 @@ import {ConversationMessage} from "../../core/schemas/conversation-message.schem
 import {Message} from "../../core/schemas/message.schema";
 import {ConversationMessageListService} from "../services/conversation-message-list.service";
 import {ProfileService} from "../services/profile.service";
+import {Call} from "../../core/schemas/call.schema";
 
 @Controller('conversation')
 @UseGuards(AuthGuard('jwt'))
@@ -63,12 +64,7 @@ export class UserConversationController
                     id: lastMessage.id,
                     isRead: lastMessage.isRead,
                     // @ts-ignore
-                    message:{
-                        // @ts-ignore
-                      ...lastMessage.message.serialize(),
-                        // @ts-ignore
-                      author: lastMessage.message.author.serialize()
-                    }
+                    message: lastMessage.message.serialize(),
                 };
             }
 
@@ -120,10 +116,14 @@ export class UserConversationController
             populate: {
                 path: 'message',
                 model: Message.name,
-                populate: {
+                populate: [{
                     path: 'author',
                     model: ClientUser.name
-                }
+                },
+                    {
+                        path: 'call',
+                        model: Call.name
+                    }]
             },
         });
 

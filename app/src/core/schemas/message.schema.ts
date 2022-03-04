@@ -8,6 +8,7 @@ import {Exclude, Expose, Type} from "class-transformer";
 import {createSerializer} from "../serializer/serializer";
 import * as mongooseDelete from 'mongoose-delete';
 import {aggregate} from '../middlewares/soft-delete-entity.middleware';
+import {CallDocument, CallStatus} from "./call.schema";
 
 export type MessageDocument = Document & Message;
 
@@ -41,7 +42,8 @@ export class Message extends BaseSchema
     @Expose()
     @Prop({
         type: MongooseSchema.Types.String,
-        required: true,
+        required: false,
+        default: null,
         maxlength: 1000,
     })
     text: string;
@@ -51,7 +53,7 @@ export class Message extends BaseSchema
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        required: false,
     })
     author: UserDocument;
 
@@ -62,11 +64,55 @@ export class Message extends BaseSchema
         default: MessageTypes.TEXT
     })
     type: number;
+
+    @Expose()
+    @Prop({
+        type: MongooseSchema.Types.ObjectId,
+        ref: 'Call',
+        required: false,
+        default: null
+    })
+    call: CallDocument;
+
+    static getTypeByCall(call: CallDocument)
+    {
+        let result: number = null;
+
+        switch (call.status)
+        {
+            case CallStatus.ENDED:
+
+                result = MessageTypes.CALL_END
+                break;
+
+            case CallStatus.UNANSWERED:
+
+                result = MessageTypes.CALL_UNANSWERED;
+                break
+
+            default:
+                result = MessageTypes.CALL_START;
+        }
+
+        return result;
+    }
 }
 
 const MessageSchema = SchemaFactory.createForClass(Message);
 
-MessageSchema.methods.serialize = createSerializer([Message]);
+MessageSchema.methods.serialize = function (groups: any = [])
+{
+    const result = {
+        text: this.text,
+        author: !!this.author ? this.author.serialize(groups) : null,
+        type: this.type,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt,
+        call: !!this.call ? this.call.serialize(groups) : null
+    };
+
+    return result;
+}
 
 MessageSchema.plugin(mongooseDelete, { deletedAt : true, overrideMethods: 'all' });
 MessageSchema.pre('aggregate', aggregate);

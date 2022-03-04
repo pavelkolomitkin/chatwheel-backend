@@ -5,6 +5,8 @@ import {Conversation, ConversationDocument} from "./conversation.schema";
 import {UserDocument} from "./user.schema";
 import {Exclude} from "class-transformer";
 import {ConversationMessage, ConversationMessageDocument} from "./conversation-message.schema";
+import {ClientUser} from "./client-user.schema";
+import {Call} from "./call.schema";
 
 export type ConversationMessageListDocument = Document & ConversationMessageList;
 
@@ -58,7 +60,13 @@ ConversationMessageListSchema.methods.serialize = function(groups: any = [])
             message: this.lastMessage.message.serialize(groups)
         };
 
-        lastMessage.message.author = this.lastMessage.message.author.serialize(groups);
+        const author: ClientUser = this.lastMessage.message.author;
+        // @ts-ignore
+        lastMessage.message.author = author ? author.serialize(groups) : null;
+
+        const call: Call = this.lastMessage.message.call;
+        // @ts-ignore
+        lastMessage.message.call = call ? call.serialize(groups) : null;
     }
 
     return {
