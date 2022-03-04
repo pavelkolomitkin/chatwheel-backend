@@ -259,7 +259,9 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
                                 { 'fullDocument.addressee': user._id }
                             ],
                             'fullDocument.status': CallMemberLinkStatus.HUNG_UP,
-                            'operationType': 'update'
+                            'operationType' : {
+                                $in: ['insert', 'update']
+                            },
                         }
                     }
                 ],
@@ -270,6 +272,7 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // @ts-ignore
         client.memberHungUpStream.on('change', async (data) => {
 
+            debugger
             const { fullDocument: { _id } } = data;
 
             const payload = await this.getCallMemberLinkPayload(_id);
@@ -347,7 +350,7 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         await member.populate('call');
         const call: CallDocument = member.call;
 
-        if (member.status in [CallMemberStatus.CONNECTED, CallMemberStatus.CONNECTING])
+        if ([CallMemberStatus.CONNECTED, CallMemberStatus.CONNECTING].includes(member.status))
         {
             // hang up
             await this.callService.hangUp(user, call);

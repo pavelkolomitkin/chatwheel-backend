@@ -89,11 +89,11 @@ const CallMemberSchema = SchemaFactory.createForClass(CallMember);
 
 CallMemberSchema.methods.isBusy = function()
 {
-    return this.status in [
+    return  [
         CallMemberStatus.IN_PENDING,
         CallMemberStatus.CONNECTING,
         CallMemberStatus.CONNECTED,
-    ];
+    ].includes(this.status);
 }
 
 CallMemberSchema.methods.serialize = createSerializer([CallMember]);

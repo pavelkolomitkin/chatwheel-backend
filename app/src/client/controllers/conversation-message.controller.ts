@@ -9,25 +9,22 @@ import {
     Put,
     Query,
     UseGuards
-} from "@nestjs/common";
-import {CurrentUser} from "../../core/decorators/user.decorator";
-import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
-import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
+} from '@nestjs/common';
+import {CurrentUser} from '../../core/decorators/user.decorator';
+import {ClientUser, ClientUserDocument} from '../../core/schemas/client-user.schema';
+import {ParameterConverter, ParameterConverterSourceType} from '../../core/decorators/parameter-converter.decorator';
 import {
     ConversationMessageList,
     ConversationMessageListDocument
-} from "../../core/schemas/conversation-message-list.schema";
-import {DateTimePipe} from "../../core/pipes/date-time.pipe";
-import {ConversationMessageService} from "../services/conversation-message.service";
-import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
-import {SentMessageUserDto} from "../dto/sent-message-user.dto";
-import {SentMessageConversationDto} from "../dto/sent-message-conversation.dto";
-import {EditMessageDto} from "../dto/edit-message.dto";
-import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
-import {RemoveMessageDto} from "../dto/remove-message.dto";
-import {AuthGuard} from "@nestjs/passport";
-import {Message} from "../../core/schemas/message.schema";
-import {AbuseReportType, AbuseReportTypeDocument} from "../../core/schemas/abuse-report-type.schema";
+} from '../../core/schemas/conversation-message-list.schema';
+import {ConversationMessageService} from '../services/conversation-message.service';
+import {ParameterConverterPipe} from '../../core/pipes/parameter-converter.pipe';
+import {SentMessageUserDto} from '../dto/sent-message-user.dto';
+import {SentMessageConversationDto} from '../dto/sent-message-conversation.dto';
+import {EditMessageDto} from '../dto/edit-message.dto';
+import {ConversationMessage, ConversationMessageDocument} from '../../core/schemas/conversation-message.schema';
+import {AuthGuard} from '@nestjs/passport';
+import {Message} from '../../core/schemas/message.schema';
 
 @Controller('message')
 @UseGuards(AuthGuard('jwt'))
@@ -73,7 +70,7 @@ export class ConversationMessageController
         @Body() data: SentMessageUserDto
     )
     {
-        const message: ConversationMessageDocument = await this.service.sendToUser(data, user, addressee);
+        const message: ConversationMessageDocument = await this.service.sendTextToUser(data, user, addressee);
 
         const result: any = {
             message: {
@@ -84,8 +81,8 @@ export class ConversationMessageController
             }
         };
 
-        // @ts-ignore
-        result.message.message.author = message.message.author.serialize();
+        // // @ts-ignore
+        // result.message.message.author = message.message.author.serialize();
         // @ts-ignore
         result.conversation = message.messageList.serialize();
 
@@ -105,19 +102,15 @@ export class ConversationMessageController
         @Body() data: SentMessageConversationDto
     )
     {
-        const message: ConversationMessageDocument = await this.service.sendToConversation(data, user, messageList);
+        const message: ConversationMessageDocument = await this.service.sendTextToConversation(data, user, messageList);
 
         return {
             // @ts-ignore
             message: {
                 id: message.id,
                 isRead: message.isRead,
-                message: {
-                    // @ts-ignore
-                    ...message.message.serialize(),
-                    // @ts-ignore
-                    author: message.message.author.serialize()
-                }
+                // @ts-ignore
+                message: message.message.serialize(),
             }
         };
     }
@@ -153,12 +146,8 @@ export class ConversationMessageController
             message: {
                 id: editedMessage.id,
                 isRead: editedMessage.isRead,
-                message: {
-                    // @ts-ignore
-                    ...editedMessage.message.serialize(),
-                    // @ts-ignore
-                    author: editedMessage.message.author.serialize()
-                }
+                // @ts-ignore
+                message: editedMessage.message.serialize(),
             }
         };
     }

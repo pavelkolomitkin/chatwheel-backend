@@ -61,6 +61,12 @@ export class Call extends BaseSchema
 
 const CallSchema = SchemaFactory.createForClass(Call);
 
+CallSchema.methods.isEnded = function()
+{
+
+    return [CallStatus.ENDED, CallStatus.UNANSWERED].includes(this.status);
+}
+
 CallSchema.methods.serialize = createSerializer([Call]);
 
 export { CallSchema };

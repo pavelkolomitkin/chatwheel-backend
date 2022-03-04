@@ -1,7 +1,7 @@
-import {Transform} from "class-transformer";
-import {IsNotEmpty, MaxLength, Validate} from "class-validator";
-import {EntityExistsValidator} from "../../core/validators/entity-exists.validator";
-import {ClientUser} from "../../core/schemas/client-user.schema";
+import {Transform} from 'class-transformer';
+import {IsNotEmpty, MaxLength, Validate} from 'class-validator';
+import {EntityExistsValidator} from '../../core/validators/entity-exists.validator';
+import {ClientUser} from '../../core/schemas/client-user.schema';
 
 export class SentMessageUserDto
 {

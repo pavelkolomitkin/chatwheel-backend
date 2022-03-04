@@ -1,16 +1,17 @@
-import {BadRequestException, Injectable} from "@nestjs/common";
-import {InjectModel} from "@nestjs/mongoose";
-import {Call, CallDocument, CallStatus} from "../../core/schemas/call.schema";
-import {Model, Types} from "mongoose";
-import {ClientUserDocument} from "../../core/schemas/client-user.schema";
-import {InitiateCallDto} from "../dto/initiate-call.dto";
-import {ProfileService} from "./profile.service";
-import {CallMemberService} from "./call-member.service";
-import {CallMemberDocument, CallMemberStatus} from "../../core/schemas/call-member.schema";
-import {AnswerCallDto} from "../dto/answer-call.dto";
-import {CallMemberLinkService} from "./call-member-link.service";
-import {CallMemberLinkDocument, CallMemberLinkStatus} from "../../core/schemas/call-member-link.schema";
-import {ConnectCallDto} from "../dto/connect-call.dto";
+import {BadRequestException, Injectable} from '@nestjs/common';
+import {InjectModel} from '@nestjs/mongoose';
+import {Call, CallDocument, CallStatus} from '../../core/schemas/call.schema';
+import {Model, Types} from 'mongoose';
+import {ClientUserDocument} from '../../core/schemas/client-user.schema';
+import {InitiateCallDto} from '../dto/initiate-call.dto';
+import {ProfileService} from './profile.service';
+import {CallMemberService} from './call-member.service';
+import {CallMemberDocument, CallMemberStatus} from '../../core/schemas/call-member.schema';
+import {AnswerCallDto} from '../dto/answer-call.dto';
+import {CallMemberLinkService} from './call-member-link.service';
+import {CallMemberLinkDocument, CallMemberLinkStatus} from '../../core/schemas/call-member-link.schema';
+import {ConnectCallDto} from '../dto/connect-call.dto';
+import {ConversationMessageService} from './conversation-message.service';
 
 @Injectable()
 export class CallService
@@ -20,7 +21,8 @@ export class CallService
 
         private readonly profileService: ProfileService,
         private readonly callMemberService: CallMemberService,
-        private readonly callMemberLinkService: CallMemberLinkService
+        private readonly callMemberLinkService: CallMemberLinkService,
+        private readonly messageService: ConversationMessageService,
     ) {
     }
 
@@ -49,6 +51,11 @@ export class CallService
         await this.callMemberService.joinToCall(initiatorMember, data.socketId);
         await this.callMemberService.create(result, addressee, false, CallMemberStatus.IN_PENDING);
 
+        if (data.isDirect)
+        {
+            await this.messageService.sendCallToUser(result, initiator, addressee);
+        }
+
         return result;
     }
 
@@ -74,11 +81,11 @@ export class CallService
         await this.callMemberService.joinToCall(member, data.socketId);
 
         // get all active members related to the call
-        const members: CallMemberDocument[] = await this.callMemberService.getMembers(call, true);
+        const activeMembers: CallMemberDocument[] = await this.callMemberService.getMembers(call, true);
 
         // for each member except the user themselves
             // create a call member link
-        for (let member of members)
+        for (let member of activeMembers)
         {
             if (member.user.id !== user.id)
             {
@@ -103,8 +110,8 @@ export class CallService
         await this.callMemberService.rejectCall(member);
 
         // get all active members related to the call
-        const members: CallMemberDocument[] = await this.callMemberService.getMembers(call, true);
-        for (let member of members)
+        const activeMembers: CallMemberDocument[] = await this.callMemberService.getMembers(call, true);
+        for (let member of activeMembers)
         {
             if (member.user.id !== user.id)
             {
@@ -114,9 +121,9 @@ export class CallService
             }
         }
 
-        if (members.length < 2)
+        if (activeMembers.length < 2)
         {
-            await this.endUpCall(call);
+            await this.endUpCall(call, CallStatus.UNANSWERED);
         }
     }
 
@@ -133,10 +140,19 @@ export class CallService
 
         await this.callMemberService.hangUp(member);
 
+        const pendingMembers: CallMemberDocument[] = await this.callMemberService.getPendingMembers(call);
+        for (let member of pendingMembers)
+        {
+            if (member.user.id !== user.id)
+            {
+                await this.callMemberLinkService.createHangUp(call, user, member.user);
+            }
+        }
+
         await this.callMemberLinkService.hangUp(call, user);
 
-        const members: CallMemberDocument[] = await this.callMemberService.getMembers(call, true);
-        if (members.length < 2)
+        const activeMembers: CallMemberDocument[] = await this.callMemberService.getMembers(call, true);
+        if (activeMembers.length < 2)
         {
             await this.endUpCall(call);
         }
@@ -186,22 +202,6 @@ export class CallService
         }
     }
 
-    async validateUserAvailability(user: ClientUserDocument)
-    {
-        const errorMessage: string = 'The user is not available for a call!';
-
-        // ONLINE USER AVAILABILITY
-
-        // get a member related to the user who has status either 'IN_PENDING', or 'CONNECTING', or 'CONNECTED'
-        const member: CallMemberDocument = await this.callMemberService.getBusyMember(user);
-        // if the member has status either CONNECTING or CONNECTED
-            // thrown an error "The is busy"
-        if (member)
-        {
-            throw new BadRequestException(errorMessage);
-        }
-    }
-
     async getActiveCallById(callId:string)
     {
         return this.model.findOne({
@@ -215,12 +215,27 @@ export class CallService
         });
     }
 
-
     async endUpCall(call: CallDocument, status: CallStatus = CallStatus.ENDED)
     {
+        // @ts-ignore
+        if (call.isEnded())
+        {
+            return;
+        }
+
         call.endTime = new Date();
         call.status = status;
 
         await call.save();
+
+        // TODO this is the current implementation for only individual calls and conversations!!!
+        if (call.isDirect)
+        {
+            const members: CallMemberDocument[] = await this.callMemberService.getMembers(call);
+            if (members.length === 2)
+            {
+                await this.messageService.sendCallToUser(call, members[0].user, members[1].user);
+            }
+        }
     }
 }

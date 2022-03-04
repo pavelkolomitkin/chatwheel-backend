@@ -7,6 +7,7 @@ import {
 } from "../../core/schemas/conversation-message-list.schema";
 import {Model, Types} from "mongoose";
 import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
+import {Call} from "../../core/schemas/call.schema";
 
 @Injectable()
 export class UserConversationService
@@ -72,10 +73,15 @@ export class UserConversationService
                 populate: {
                     path: 'message',
                     model: 'Message',
-                    populate: {
+                    populate: [{
                         path: 'author',
                         model: ClientUser.name
-                    }
+                    },
+                        {
+                           path: 'call',
+                           model: Call.name
+                        }
+                    ]
                 }
             })
             .sort({ updatedAt: -1 })
@@ -127,7 +133,7 @@ export class UserConversationService
             if (!!result.lastMessage)
             {
                 await result.lastMessage.populate('message');
-                await result.lastMessage.message.populate('author');
+                await result.lastMessage.message.populate(['author', 'call']);
             }
 
             return result;

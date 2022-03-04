@@ -62,6 +62,17 @@ export class CallMemberService
         await member.save();
     }
 
+    getPendingMembers(call: CallDocument)
+    {
+        return this.model.find({
+            call: call,
+            status: CallMemberStatus.IN_PENDING
+        }).populate({
+            path: 'user',
+            model: ClientUser.name
+        });
+    }
+
     getMembers(call: CallDocument, active: boolean = false)
     {
         let filter: Object = {

@@ -47,6 +47,20 @@ export class CallMemberLinkService
         return result;
     }
 
+    async createHangUp(call: CallDocument, user: ClientUserDocument, addressee: ClientUserDocument)
+    {
+        const result: CallMemberLinkDocument = new this.model({
+            call: call,
+            initiator: user,
+            addressee: addressee,
+            status: CallMemberLinkStatus.HUNG_UP
+        });
+
+        await result.save();
+
+        return result;
+    }
+
     async hangUp(call: CallDocument, user: ClientUserDocument)
     {
         await this.model.updateMany({
