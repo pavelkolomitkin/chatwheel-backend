@@ -21,6 +21,8 @@ import {CallsGateway} from "./gateways/calls.gateway";
 import {CallService} from "./services/call.service";
 import {CallMemberService} from "./services/call-member.service";
 import {CallMemberLinkService} from "./services/call-member-link.service";
+import {GeoSearchController} from "./controllers/search/geo-search.controller";
+import {SearchService} from "./services/search/search.service";
 
 @Module({
     controllers: [
@@ -30,7 +32,8 @@ import {CallMemberLinkService} from "./services/call-member-link.service";
         ConversationMessageController,
         UserConversationController,
         AbuseReportController,
-        CallController
+        CallController,
+        GeoSearchController
     ],
     providers: [
         ProfileService,
@@ -45,6 +48,7 @@ import {CallMemberLinkService} from "./services/call-member-link.service";
         CallService,
         CallMemberService,
         CallMemberLinkService,
+        SearchService,
 
         MessagesGateway,
         UserActivityGateway,
