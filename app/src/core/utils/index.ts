@@ -1,5 +1,5 @@
 
-export const getPageLimitOffset = (page: number): {
+export const getPageLimitOffset = (page: number, limit: number = 10): {
     limit: number,
     offset: number
 } => {
@@ -9,7 +9,6 @@ export const getPageLimitOffset = (page: number): {
         page = 1;
     }
 
-    const limit = 10;
     const offset = (page - 1) * limit;
 
     return {
