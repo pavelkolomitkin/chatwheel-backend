@@ -162,7 +162,7 @@ export class ProfileService
         const isUserBanned: boolean = await this.isAddresseeBanned(addressee, user);
         if (isUserBanned)
         {
-            throw new BadRequestException(`You've benn banned by this user!`);
+            throw new BadRequestException(`You've been banned by this user!`);
         }
     }
 

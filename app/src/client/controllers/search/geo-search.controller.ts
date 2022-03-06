@@ -4,13 +4,15 @@ import {MapSearchDto} from "../../dto/search/map-search.dto";
 import {CurrentUser} from "../../../core/decorators/user.decorator";
 import {ClientUserDocument} from "../../../core/schemas/client-user.schema";
 import {SearchService} from "../../services/search/search.service";
+import {ProfileService} from "../../services/profile.service";
 
 @Controller('search/geo')
 @UseGuards(AuthGuard('jwt'))
 export class GeoSearchController
 {
     constructor(
-        private readonly service: SearchService
+        private readonly service: SearchService,
+        private readonly profileService: ProfileService
     ) {
     }
 
@@ -36,9 +38,12 @@ export class GeoSearchController
     )
     {
         const users = await this.service.getNearBy(user, page);
+        const banStatuses = await this.profileService.getBanStatuses(user, users);
 
         return {
-            users: users
+            // @ts-ignore
+            users: users.map(user => user.serialize()),
+            banStatuses
         };
     }
 }

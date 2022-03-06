@@ -35,17 +35,6 @@ export class SearchService
     {
         const { topLeft, bottomRight } = box;
 
-        // const result = {
-        //     type: 'Polygon',
-        //     coordinates: [[
-        //         [topLeft.longitude, topLeft.latitude],
-        //         [topLeft.longitude, bottomRight.latitude],
-        //         [bottomRight.longitude, bottomRight.latitude],
-        //         [bottomRight.longitude, topLeft.latitude],
-        //         [topLeft.longitude, topLeft.latitude],
-        //     ]]
-        // };
-
         const result = [
             // bottom left coordinates
             [topLeft.longitude, bottomRight.latitude],
@@ -72,8 +61,6 @@ export class SearchService
             }
         });
 
-        debugger
-
         return result;
     }
 
@@ -84,16 +71,16 @@ export class SearchService
 
         const { limit, offset } = getPageLimitOffset(page, 20);
 
-        const result = this.userModel.find({
+        const result = await this.userModel.find({
             $near: {
                 $geometry: user.geoLocation,
                 $maxDistance: maxDistance
-            }
+            },
+            _id: { $ne: user._id }
         })
+            .populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '))
             .skip(offset)
             .limit(limit);
-
-        debugger
 
 
         return result;

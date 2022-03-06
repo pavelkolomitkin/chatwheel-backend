@@ -21,6 +21,13 @@ export type ClientUserDocument = UserDocument & ClientUser;
 })
 export class ClientUser
 {
+    static COMMON_POPULATED_FIELDS = [
+        'residenceCountry',
+        'searchCountry',
+        'interests',
+        'geoLocation'
+    ];
+
     @Expose({ groups: ['admin'] })
     @Prop({
         default: false,
@@ -79,7 +86,7 @@ ClientUserSchema.virtual('roles').get(function(){
 
 ClientUserSchema.methods.populateCommonFields = async function()
 {
-    await this.populate('residenceCountry searchCountry interests geoLocation');
+    await this.populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
 }
 
 ClientUserSchema.methods.serialize = createSerializer([User, ClientUser], userAvatarThumbsHook);
