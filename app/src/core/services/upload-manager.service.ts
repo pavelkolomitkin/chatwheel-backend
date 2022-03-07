@@ -1,6 +1,4 @@
 import {Injectable} from '@nestjs/common';
-//import {ConfigService} from '../../config/config.service';
-//import {User} from '../models/user.model';
 import {CoreException} from '../exceptions/core.exception';
 import * as fsx from 'fs-extra';
 import {ConfigService} from "@nestjs/config";
@@ -19,12 +17,22 @@ export class UploadManagerService
         }
 
         // @ts-ignore
-        const file = this.config.get('UPLOAD_DIRECTORY') + '/' + user.avatar.filename;
+        await this.removeFile(user.avatar.filename);
+    }
+
+    async removeFile(relativePath: string)
+    {
+        const file = this.getFilePath(relativePath);
         if (!await fsx.pathExists(file))
         {
-            throw new CoreException('User has no avatar!');
+            throw new CoreException('File does not exist!');
         }
 
         await fsx.remove(file);
+    }
+
+    getFilePath(relativePath: string)
+    {
+        return this.config.get('UPLOAD_DIRECTORY') + '/' + relativePath;
     }
 }

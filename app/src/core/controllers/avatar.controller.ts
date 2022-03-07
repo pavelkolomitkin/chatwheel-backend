@@ -35,12 +35,13 @@ export class AvatarController
     async upload(@UploadedFile() file, @CurrentUser() user: UserDocument)
     {
         if (user.avatar)
-        {
+        {// @ts-ignore
             try {
                 await this.uploadService.removeAvatar(user);
                 await this.thumbService.removeUserAvatar(user);
             }
-            catch (e) { }
+            catch (e) {
+            }
         }
 
         // @ts-ignore

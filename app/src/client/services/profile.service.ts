@@ -28,6 +28,11 @@ export class ProfileService
     ) {
     }
 
+    getUserModel()
+    {
+        return this.model;
+    }
+
     async updateFullName(data: UserFullnameDto, user: ClientUserDocument): Promise<ClientUserDocument>
     {
         user.fullName = data.fullName;

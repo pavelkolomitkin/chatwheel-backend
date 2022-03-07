@@ -23,6 +23,12 @@ import {CallMemberService} from "./services/call-member.service";
 import {CallMemberLinkService} from "./services/call-member-link.service";
 import {GeoSearchController} from "./controllers/search/geo-search.controller";
 import {SearchService} from "./services/search/search.service";
+import {ChatRouletteController} from "./controllers/search/chat-roulette.controller";
+import {ChatRouletteGateway} from "./gateways/chat-roulette.gateway";
+import {ChatRouletteService} from "./services/search/chat-roulette.service";
+import {ChatRouletteOfferService} from "./services/search/chat-roulette-offer.service";
+import {ChatRoulettePictureService} from "./services/search/chat-roulette-picture.service";
+import {ChatRouletteUserActivityService} from "./services/search/chat-roulette-user-activity.service";
 
 @Module({
     controllers: [
@@ -33,7 +39,8 @@ import {SearchService} from "./services/search/search.service";
         UserConversationController,
         AbuseReportController,
         CallController,
-        GeoSearchController
+        GeoSearchController,
+        ChatRouletteController
     ],
     providers: [
         ProfileService,
@@ -49,10 +56,15 @@ import {SearchService} from "./services/search/search.service";
         CallMemberService,
         CallMemberLinkService,
         SearchService,
+        ChatRouletteService,
+        ChatRouletteOfferService,
+        ChatRoulettePictureService,
+        ChatRouletteUserActivityService,
 
         MessagesGateway,
         UserActivityGateway,
-        CallsGateway
+        CallsGateway,
+        ChatRouletteGateway
     ]
 })
 export class ClientModule {}
