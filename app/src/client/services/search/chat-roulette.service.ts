@@ -98,10 +98,42 @@ export class ChatRouletteService
                 }
             },
             {
-                $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'user' }
+                $lookup: {
+                    from: 'bannedusers',
+                    let: { user: '$user' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                { $eq: [ '$applicant', '$$user' ], },
+                                                { $eq: [ '$banned', user._id] },
+                                                { $eq: [ '$isDeleted', false] }
+                                            ]
+                                        },
+                                        {
+                                            $and: [
+                                                { $eq: [ '$applicant', user._id ], },
+                                                { $eq: [ '$banned', '$$user' ] },
+                                                { $eq: [ '$isDeleted', false] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'banStatus'
+                }
             },
             {
-                $unwind: '$user'
+                $match: {
+                    'banStatus': {
+                        $size: 0
+                    }
+                }
             },
             {
                 $sample: { size: 1 }

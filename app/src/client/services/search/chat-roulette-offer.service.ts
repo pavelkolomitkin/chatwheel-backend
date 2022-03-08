@@ -28,19 +28,49 @@ export class ChatRouletteOfferService
 
     async getActualOffer(addressee: ClientUserDocument)
     {
-        const awaitSeconds = +this.config.get('CHAT_ROULETTE_OFFER_AWAIT_TIME');
-
-        const timeAgo: Date = new Date();
-        timeAgo.setTime(timeAgo.getTime() - awaitSeconds);
-
         const searchResults = await this.model.aggregate([
             {
                 $match: {
                     addressee: addressee._id,
-                    // createdAt: {
-                    //     $gte: timeAgo
-                    // },
                     accepted: false
+                }
+            },
+            {
+                $lookup: {
+                    from: 'bannedusers',
+                    let: { user: '$user' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                { $eq: [ '$applicant', '$$user' ], },
+                                                { $eq: [ '$banned', addressee._id] },
+                                                { $eq: [ '$isDeleted', false] }
+                                            ]
+                                        },
+                                        {
+                                            $and: [
+                                                { $eq: [ '$applicant', addressee._id ], },
+                                                { $eq: [ '$banned', '$$user' ] },
+                                                { $eq: [ '$isDeleted', false] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'banStatus'
+                }
+            },
+            {
+                $match: {
+                    'banStatus': {
+                        $size: 0
+                    }
                 }
             },
             {
@@ -49,9 +79,8 @@ export class ChatRouletteOfferService
             {
                 $project: { _id: 1 }
             }
-        ])
-            .sort({ createdAt: -1 })
-            .limit(1);
+        ]);
+        debugger
 
         if (searchResults.length === 0)
         {
