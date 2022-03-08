@@ -33,7 +33,10 @@ export class ChatRouletteService
 
         if (!!activity.lastCapturedPicture)
         {
-            await this.pictureService.removePicture(activity);
+            try {
+                await this.pictureService.removePicture(activity);
+            }
+            catch (error) { }
         }
 
         // @ts-ignore
@@ -64,8 +67,26 @@ export class ChatRouletteService
         return result;
     }
 
+    async getPreviousUserOffer(user: ClientUserDocument)
+    {
+
+    }
+
     async findPartner(user: ClientUserDocument, withPreferences: boolean = false): Promise<ChatRouletteOfferDocument>
     {
+        // TODO create a unique index for the field 'chatrouletteoffers.user' in order to avoid multiplying offers from the same user
+
+        // find the previous offer made by user to anyone
+            // if it exists
+                // remove it keeping the addressee link in order to rule out them from the next offer that is gonna be made
+
+        const previousOffer: ChatRouletteOfferDocument = await this.offerService.getUserOffer(user);
+        if (previousOffer)
+        {
+            // TODO you should use the addressee in order to rule out them from the next candidate
+            await previousOffer.delete();
+        }
+
         // TODO the parameter "withPreferences" should be considered as well
         const searchResult = await this.activityService.getModel().aggregate([
             {
@@ -78,6 +99,9 @@ export class ChatRouletteService
             },
             {
                 $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'user' }
+            },
+            {
+                $unwind: '$user'
             },
             {
                 $sample: { size: 1 }
@@ -107,7 +131,6 @@ export class ChatRouletteService
         await this.offerService.validateRelationship(offer, addressee);
 
         // update accepted = true
-
         offer.accepted = true;
         await offer.save();
 

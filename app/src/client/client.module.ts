@@ -29,6 +29,7 @@ import {ChatRouletteService} from "./services/search/chat-roulette.service";
 import {ChatRouletteOfferService} from "./services/search/chat-roulette-offer.service";
 import {ChatRoulettePictureService} from "./services/search/chat-roulette-picture.service";
 import {ChatRouletteUserActivityService} from "./services/search/chat-roulette-user-activity.service";
+import {ChatRoulettePictureController} from "./controllers/search/chat-roulette-picture.controller";
 
 @Module({
     controllers: [
@@ -40,7 +41,8 @@ import {ChatRouletteUserActivityService} from "./services/search/chat-roulette-u
         AbuseReportController,
         CallController,
         GeoSearchController,
-        ChatRouletteController
+        ChatRouletteController,
+        ChatRoulettePictureController
     ],
     providers: [
         ProfileService,

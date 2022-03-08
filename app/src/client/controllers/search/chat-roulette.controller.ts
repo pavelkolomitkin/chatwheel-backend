@@ -96,6 +96,8 @@ export class ChatRouletteController
     {
         const acceptedOffer: ChatRouletteOfferDocument = await this.service.acceptOffer(offer, user);
 
+        await acceptedOffer.populate('user');
+
         return {
             id: offer.id,
             // @ts-ignore

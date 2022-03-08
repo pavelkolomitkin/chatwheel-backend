@@ -6,12 +6,14 @@ import {
 } from "../../../core/schemas/chat-roulette-user-activity.schema";
 import {Model} from "mongoose";
 import {ClientUserDocument} from "../../../core/schemas/client-user.schema";
+import {ChatRoulettePictureService} from "./chat-roulette-picture.service";
 
 @Injectable()
 export class ChatRouletteUserActivityService
 {
     constructor(
-        @InjectModel(ChatRouletteUserActivity.name) private readonly model: Model<ChatRouletteUserActivityDocument>
+        @InjectModel(ChatRouletteUserActivity.name) private readonly model: Model<ChatRouletteUserActivityDocument>,
+        private readonly pictureService: ChatRoulettePictureService
     ) {
     }
 
@@ -38,8 +40,25 @@ export class ChatRouletteUserActivityService
 
     async remove(user: ClientUserDocument)
     {
-        await this.model.deleteOne({
+        const activity: ChatRouletteUserActivityDocument = await this.model.findOne({
             user: user
         });
+
+        if (!activity)
+        {
+            return;
+        }
+
+        if (!!activity.lastCapturedPicture)
+        {
+            try {
+                await this.pictureService.removePicture(activity);
+            }
+            catch (error) {}
+        }
+
+        await activity.delete();
+
+        return activity;
     }
 }

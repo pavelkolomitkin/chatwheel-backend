@@ -19,6 +19,13 @@ export class ChatRouletteOfferService
         return this.model;
     }
 
+    async getUserOffer(user: ClientUserDocument)
+    {
+        return this.model.findOne({
+            user: user
+        });
+    }
+
     async getActualOffer(addressee: ClientUserDocument)
     {
         const awaitSeconds = +this.config.get('CHAT_ROULETTE_OFFER_AWAIT_TIME');
@@ -29,10 +36,10 @@ export class ChatRouletteOfferService
         const searchResults = await this.model.aggregate([
             {
                 $match: {
-                    addressee: addressee,
-                    createdAt: {
-                        $gte: timeAgo
-                    },
+                    addressee: addressee._id,
+                    // createdAt: {
+                    //     $gte: timeAgo
+                    // },
                     accepted: false
                 }
             },
@@ -42,7 +49,9 @@ export class ChatRouletteOfferService
             {
                 $project: { _id: 1 }
             }
-        ]);
+        ])
+            .sort({ createdAt: -1 })
+            .limit(1);
 
         if (searchResults.length === 0)
         {

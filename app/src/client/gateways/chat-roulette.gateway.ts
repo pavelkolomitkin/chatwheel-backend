@@ -12,6 +12,7 @@ import {ChatRouletteOfferService} from "../services/search/chat-roulette-offer.s
 import {ChatRouletteUserActivityService} from "../services/search/chat-roulette-user-activity.service";
 import {ChatRouletteUserActivityDocument} from "../../core/schemas/chat-roulette-user-activity.schema";
 import {ChatRouletteOfferType} from "../../core/schemas/chat-roulette-offer.schema";
+import {ChatRouletteService} from "../services/search/chat-roulette.service";
 
 @Injectable()
 @WebSocketGateway({
@@ -27,6 +28,7 @@ export class ChatRouletteGateway implements OnGatewayInit, OnGatewayConnection, 
     server: Server;
 
     constructor(
+        private readonly service: ChatRouletteService,
         private readonly offerService: ChatRouletteOfferService,
         private readonly activityService: ChatRouletteUserActivityService,
         private readonly guard: WsJwtGuard
@@ -79,9 +81,14 @@ export class ChatRouletteGateway implements OnGatewayInit, OnGatewayConnection, 
                 .activityService
                 .getModel()
                 .findOne({
-                    _id: fullDocument.addressee
+                    user: fullDocument.addressee
                 })
                 .populate('user');
+
+            if (!addresseeActivity)
+            {
+                return;
+            }
 
             client.emit(ChatRouletteGateway.CHAT_ROULETTE_USER_ACCEPTED_OFFER, {
                 id: fullDocument._id.toString(),
@@ -92,7 +99,14 @@ export class ChatRouletteGateway implements OnGatewayInit, OnGatewayConnection, 
         });
     }
 
-    handleDisconnect(client: Socket): any {
+    async handleDisconnect(client: Socket) {
+
+        // @ts-ignore
+        const { user } = client;
+
+        await this.service.turnOff(user);
+
+        //await this.activityService.remove(user);
 
         // @ts-ignore
         client.acceptedOffersStream.close();
