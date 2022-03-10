@@ -38,7 +38,6 @@ export class User extends BaseSchema {
     @Expose({ groups: ['mine', 'admin'] })
     @Prop({
         required: false,
-        unique: false,
         default: null,
     })
     email: string;

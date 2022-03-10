@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import {Module} from '@nestjs/common';
 import {LoginPasswordController} from './controllers/login-password.controller';
 import {UniqueUserEmailValidator} from './validators/unique-user-email.validator';
 import {MongooseModule} from '@nestjs/mongoose';
@@ -22,9 +22,13 @@ import {ProfileController} from "./controllers/profile.controller";
 import {UserService} from "./services/user.service";
 import {WsJwtGuard} from "./guards/ws-jwt.guard";
 import {JwtAuthService} from "./services/jwt-auth.service";
+import {HttpModule} from "@nestjs/axios";
+import {VkAuthService} from "./services/vk-auth.service";
+import {VkAuthController} from "./controllers/vk-auth.controller";
 
 @Module({
     imports: [
+        HttpModule,
         MongooseModule.forFeature([
             {
                 name: ConfirmationUserAccountKey.name,
@@ -49,7 +53,8 @@ import {JwtAuthService} from "./services/jwt-auth.service";
     ],
     controllers: [
         LoginPasswordController,
-        ProfileController
+        ProfileController,
+        VkAuthController
     ],
     providers: [
         JwtStrategy,
@@ -59,6 +64,7 @@ import {JwtAuthService} from "./services/jwt-auth.service";
         LoginPasswordService,
         RestorePasswordKeyService,
         ConfirmationAccountKeyService,
+        VkAuthService,
 
         UniqueUserEmailValidator,
         UserRegisterConfirmationKeyValidator,
