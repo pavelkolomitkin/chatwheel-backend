@@ -22,6 +22,7 @@
     "migrate-mongo": "./node_modules/migrate-mongo/bin/migrate-mongo.js"
   },
   "dependencies": {
+    "@nestjs/axios": "^0.0.7",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.0.0",

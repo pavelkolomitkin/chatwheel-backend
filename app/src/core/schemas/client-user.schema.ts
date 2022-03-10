@@ -10,6 +10,11 @@ import {userAvatarThumbsHook} from "../models/serialization/hooks/user.hooks";
 
 export type ClientUserDocument = UserDocument & ClientUser;
 
+export enum SocialMediaType {
+    VK = 0,
+    GOOGLE = 1
+}
+
 @Exclude()
 @Schema({
     toObject: {
@@ -76,6 +81,30 @@ export class ClientUser
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'UserInterest' }],
     })
     interests: UserInterestDocument[];
+
+    @Expose()
+    @Prop({
+        type: MongooseSchema.Types.Number,
+        required: false,
+        default: null
+    })
+    socialMediaType: SocialMediaType;
+
+    @Expose()
+    @Prop({
+        type: MongooseSchema.Types.String,
+        required: false,
+        default: null
+    })
+    socialMediaUserId: string;
+
+    @Expose()
+    @Prop({
+        type: {},
+        required: false,
+        default: null
+    })
+    socialMediaPhotos: {};
 }
 
 const ClientUserSchema = SchemaFactory.createForClass(ClientUser);
