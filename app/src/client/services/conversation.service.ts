@@ -86,7 +86,7 @@ export class ConversationService
         await conversation.populate('members.member');
 
         // @ts-ignore
-        return conversation.members.map(item => item.member);
+        return conversation.members.map(item => item.member).filter(member => member.deleted !== true);
     }
 
     async getAddressee(individualConversation: ConversationDocument, user: ClientUserDocument): Promise<ClientUserDocument>

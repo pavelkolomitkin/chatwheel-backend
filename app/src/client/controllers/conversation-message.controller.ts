@@ -25,6 +25,7 @@ import {EditMessageDto} from '../dto/edit-message.dto';
 import {ConversationMessage, ConversationMessageDocument} from '../../core/schemas/conversation-message.schema';
 import {AuthGuard} from '@nestjs/passport';
 import {Message} from '../../core/schemas/message.schema';
+import {ValidateUserPipe} from "../pipes/validate-user.pipe";
 
 @Controller('message')
 @UseGuards(AuthGuard('jwt'))
@@ -66,7 +67,7 @@ export class ConversationMessageController
             field: 'id',
             paramName: 'addresseeId',
             sourceType: ParameterConverterSourceType.BODY
-        }, ParameterConverterPipe) addressee: ClientUserDocument,
+        }, ParameterConverterPipe, ValidateUserPipe) addressee: ClientUserDocument,
         @Body() data: SentMessageUserDto
     )
     {

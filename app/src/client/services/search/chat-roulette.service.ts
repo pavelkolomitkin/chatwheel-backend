@@ -67,11 +67,6 @@ export class ChatRouletteService
         return result;
     }
 
-    async getPreviousUserOffer(user: ClientUserDocument)
-    {
-
-    }
-
     async findPartner(user: ClientUserDocument, withPreferences: boolean = false): Promise<ChatRouletteOfferDocument>
     {
         // TODO create a unique index for the field 'chatrouletteoffers.user' in order to avoid multiplying offers from the same user

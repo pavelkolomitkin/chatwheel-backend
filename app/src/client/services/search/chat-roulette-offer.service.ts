@@ -102,6 +102,20 @@ export class ChatRouletteOfferService
         return result;
     }
 
+    async removeUserOffers(user: ClientUserDocument)
+    {
+        this.model.deleteMany({
+            user: user
+        });
+    }
+
+    async removeAddressedToUser(user: ClientUserDocument)
+    {
+        this.model.deleteMany({
+            addressee: user
+        });
+    }
+
     async validateRelationship(offer: ChatRouletteOfferDocument, addressee: ClientUserDocument)
     {
         await offer.populate('addressee');

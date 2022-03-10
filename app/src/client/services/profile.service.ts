@@ -10,6 +10,10 @@ import {UserInterestDocument} from "../../core/schemas/user-interest.schema";
 import {CountryDocument} from "../../core/schemas/country.schema";
 import {GeoLocationDto} from "../dto/geo-location.dto";
 import {BannedUser, BannedUserDocument} from "../../core/schemas/banned-user.schema";
+import {ChatRouletteUserActivityService} from "./search/chat-roulette-user-activity.service";
+import {ChatRouletteOfferService} from "./search/chat-roulette-offer.service";
+import {UploadManagerService} from "../../core/services/upload-manager.service";
+import {ImageThumbService} from "../../core/services/image-thumb.service";
 
 @Injectable()
 export class ProfileService
@@ -24,13 +28,51 @@ export class ProfileService
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
         @InjectModel(BannedUser.name) private readonly bannedModel: Model<BannedUserDocument>,
-        private readonly interestService: UserInterestService
+        private readonly interestService: UserInterestService,
+        private readonly chatRouletteActivityService: ChatRouletteUserActivityService,
+        private readonly chatRouletteOfferService: ChatRouletteOfferService,
+        private uploadService: UploadManagerService,
+        private thumbService: ImageThumbService
     ) {
     }
 
     getUserModel()
     {
         return this.model;
+    }
+
+    async removeAccount(user: ClientUserDocument): Promise<ClientUserDocument>
+    {
+        if (user.socialMediaType !== null)
+        {
+            throw new BadRequestException('Cannot remove this user!');
+        }
+
+        // remove chat activity
+        await this.chatRouletteActivityService.remove(user);
+
+        // remove chat offers made
+        await this.chatRouletteOfferService.removeAddressedToUser(user);
+        await this.chatRouletteOfferService.removeUserOffers(user);
+
+        if (user.avatar)
+        {
+            try {
+                await this.uploadService.removeAvatar(user);
+                await this.thumbService.removeUserAvatar(user);
+            }
+            catch (e) {
+            }
+        }
+
+        // @ts-ignore
+        user.deleted = true;
+        // @ts-ignore
+        user.deletedAt = new Date();
+
+        await user.save();
+
+        return user;
     }
 
     async updateFullName(data: UserFullnameDto, user: ClientUserDocument): Promise<ClientUserDocument>
@@ -136,13 +178,6 @@ export class ProfileService
         user.searchCountry = country;
 
         await user.save();
-
-        return user;
-    }
-
-    async removeAccount(user: ClientUserDocument): Promise<ClientUserDocument>
-    {
-        await user.delete();
 
         return user;
     }

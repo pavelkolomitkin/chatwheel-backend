@@ -6,6 +6,7 @@ import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe"
 import {AuthGuard} from "@nestjs/passport";
 import {UserProfileService} from "../services/user-profile.service";
 import {ProfileService} from "../services/profile.service";
+import {ValidateUserPipe} from "../pipes/validate-user.pipe";
 
 @Controller('user-profile')
 @UseGuards(AuthGuard('jwt'))
@@ -26,7 +27,7 @@ export class UserProfileController
             field: 'id',
             paramName: 'id',
             sourceType: ParameterConverterSourceType.PARAM
-        }, ParameterConverterPipe) user: ClientUserDocument
+        }, ParameterConverterPipe, ValidateUserPipe) user: ClientUserDocument
     )
     {
         await user.populate('interests');
@@ -48,7 +49,7 @@ export class UserProfileController
             field: 'id',
             paramName: 'id',
             sourceType: ParameterConverterSourceType.PARAM
-        }, ParameterConverterPipe) addressee: ClientUserDocument
+        }, ParameterConverterPipe, ValidateUserPipe) addressee: ClientUserDocument
     )
     {
         await this.profileService.banAddressee(currentUser, addressee);
@@ -70,7 +71,7 @@ export class UserProfileController
             field: 'id',
             paramName: 'id',
             sourceType: ParameterConverterSourceType.PARAM
-        }, ParameterConverterPipe) addressee: ClientUserDocument
+        }, ParameterConverterPipe, ValidateUserPipe) addressee: ClientUserDocument
     )
     {
         await this.profileService.unbanAddressee(currentUser, addressee);
