@@ -36,6 +36,8 @@ import {SecurityModule} from "../security/security.module";
 import {Call, CallSchema} from "./schemas/call.schema";
 import {CallMember, CallMemberSchema} from "./schemas/call-member.schema";
 import {CallMemberLink, CallMemberLinkSchema} from "./schemas/call-member-link.schema";
+import {ChatRouletteOffer, ChatRouletteOfferSchema} from "./schemas/chat-roulette-offer.schema";
+import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schemas/chat-roulette-user-activity.schema";
 
 @Global()
 @Module({
@@ -141,6 +143,14 @@ import {CallMemberLink, CallMemberLinkSchema} from "./schemas/call-member-link.s
             {
                 name: CallMemberLink.name,
                 schema: CallMemberLinkSchema
+            },
+            {
+                name: ChatRouletteOffer.name,
+                schema: ChatRouletteOfferSchema
+            },
+            {
+                name: ChatRouletteUserActivity.name,
+                schema: ChatRouletteUserActivitySchema
             }
         ]),
 
@@ -185,7 +195,9 @@ import {CallMemberLink, CallMemberLinkSchema} from "./schemas/call-member-link.s
         MongooseModule,
         EmailServiceProvider,
         EntityExistsValidator,
-        SecurityModule
+        SecurityModule,
+        MulterModule,
+        UploadManagerService
     ]
 })
 export class CoreModule {}

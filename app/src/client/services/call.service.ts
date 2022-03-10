@@ -2,11 +2,11 @@ import {BadRequestException, Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Call, CallDocument, CallStatus} from '../../core/schemas/call.schema';
 import {Model, Types} from 'mongoose';
-import {ClientUserDocument} from '../../core/schemas/client-user.schema';
+import {ClientUser, ClientUserDocument} from '../../core/schemas/client-user.schema';
 import {InitiateCallDto} from '../dto/initiate-call.dto';
 import {ProfileService} from './profile.service';
 import {CallMemberService} from './call-member.service';
-import {CallMemberDocument, CallMemberStatus} from '../../core/schemas/call-member.schema';
+import {CallMember, CallMemberDocument, CallMemberStatus} from '../../core/schemas/call-member.schema';
 import {AnswerCallDto} from '../dto/answer-call.dto';
 import {CallMemberLinkService} from './call-member-link.service';
 import {CallMemberLinkDocument, CallMemberLinkStatus} from '../../core/schemas/call-member-link.schema';
@@ -31,6 +31,86 @@ export class CallService
         return this.model;
     }
 
+    async getList(user: ClientUserDocument, criteria: any, isDirect: boolean = true,  limit: number = 10)
+    {
+        const matchCriteria: any[] = [
+            { 'members.user': user._id, }
+        ];
+
+        this.handleLastDateSearchCriterion(matchCriteria, criteria);
+        this.handleLastIdSearchCriterion(matchCriteria, criteria);
+
+
+        const searchResult = await this.model.aggregate([
+            {
+                $match: {
+                    isDirect: isDirect
+                }
+            },
+            {
+                $lookup: {
+                    from: 'callmembers',
+                    localField: '_id',
+                    foreignField: 'call',
+                    as: 'members'
+                }
+            },
+            {
+                $match: {
+                    $and: matchCriteria
+                }
+            },
+            {
+                $sort: {
+                    updatedAt: -1
+                }
+            },
+            {
+                $project: { _id: 1 }
+            }
+        ])
+            .limit(limit)
+        ;
+        if (searchResult.length === 0)
+        {
+            return [];
+        }
+
+        const ids: any[] = searchResult.map(item => item._id);
+        const result: CallDocument[] = await this.model.find({
+            _id: {
+                $in: ids
+            }
+        })
+            .sort({ updatedAt: -1 })
+            .populate({
+                path: 'members',
+                model: CallMember.name,
+                populate: {
+                    path: 'user',
+                    model: ClientUser.name
+                }
+            });
+
+        return result;
+    }
+
+    handleLastDateSearchCriterion(matchCriteria: any[], criteria: any)
+    {
+        if (criteria.lastDate)
+        {
+            matchCriteria.push({ 'updatedAt': { $lte: criteria.lastDate }});
+        }
+    }
+
+    handleLastIdSearchCriterion(matchCriteria: any[], criteria: any)
+    {
+        if (criteria.latestId)
+        {
+            matchCriteria.push({ _id: { $ne: new Types.ObjectId(criteria.latestId) } });
+        }
+    }
+
     async initiate(initiator: ClientUserDocument, addressee: ClientUserDocument, data: InitiateCallDto): Promise<CallDocument>
     {
         await this.profileService.validateBanStatus(initiator, addressee);
@@ -49,7 +129,14 @@ export class CallService
         );
 
         await this.callMemberService.joinToCall(initiatorMember, data.socketId);
-        await this.callMemberService.create(result, addressee, false, CallMemberStatus.IN_PENDING);
+        result.members.push(initiatorMember._id);
+
+        const addresseeMember: CallMemberDocument = await this
+            .callMemberService
+            .create(result, addressee, false, CallMemberStatus.IN_PENDING);
+        result.members.push(addresseeMember._id);
+
+        await result.save();
 
         if (data.isDirect)
         {

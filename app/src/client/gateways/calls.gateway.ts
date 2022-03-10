@@ -64,6 +64,34 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     }
 
+    async handleDisconnect(client: Socket) {
+
+        [
+            'incomingCallStream',
+            'memberConnectionStream',
+            'memberConnectedStream',
+            'memberRejectedStream',
+            'memberHungUpStream'
+        ].forEach((streamName) => {
+
+            if (!!client[streamName])
+            {
+                client[streamName].close();
+                client[streamName] = null;
+            }
+        });
+
+        await this.endUpWindowCall(client);
+        await this.rejectAllIncomingCalls(client);
+
+        // @ts-ignore
+        client.conn.close();
+        // @ts-ignore
+        client.removeAllListeners();
+        // @ts-ignore
+        client.disconnect(true);
+    }
+
     handleClientConnected(client, args)
     {
         client.emit(CallsGateway.CALL_CLIENT_CONNECTED, {
@@ -272,7 +300,6 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // @ts-ignore
         client.memberHungUpStream.on('change', async (data) => {
 
-            debugger
             const { fullDocument: { _id } } = data;
 
             const payload = await this.getCallMemberLinkPayload(_id);
@@ -304,34 +331,6 @@ export class CallsGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         };
 
         return result;
-    }
-
-    async handleDisconnect(client: Socket) {
-
-        [
-            'memberConnectedStream',
-            'memberConnectionStream',
-            'memberConnectedStream',
-            'memberRejectedStream',
-            'memberHungUpStream'
-        ].forEach((streamName) => {
-
-            if (!!client[streamName])
-            {
-                client[streamName].close();
-                client[streamName] = null;
-            }
-        });
-
-        await this.endUpWindowCall(client);
-        await this.rejectAllIncomingCalls(client);
-
-        // @ts-ignore
-        client.conn.close();
-        // @ts-ignore
-        client.removeAllListeners();
-        // @ts-ignore
-        client.disconnect(true);
     }
 
     async endUpWindowCall(client: Socket)

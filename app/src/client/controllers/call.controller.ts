@@ -1,4 +1,15 @@
-import {Body, Controller, HttpCode, HttpStatus, Post, Put, UseGuards} from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    DefaultValuePipe,
+    Get,
+    HttpCode,
+    HttpStatus, ParseBoolPipe,
+    Post,
+    Put,
+    Query,
+    UseGuards
+} from "@nestjs/common";
 import {AuthGuard} from "@nestjs/passport";
 import {CurrentUser} from "../../core/decorators/user.decorator";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
@@ -12,6 +23,7 @@ import {ConnectCallDto} from "../dto/connect-call.dto";
 import {CallMemberLink, CallMemberLinkDocument} from "../../core/schemas/call-member-link.schema";
 import {CallMemberService} from "../services/call-member.service";
 import {CallMemberDocument} from "../../core/schemas/call-member.schema";
+import {ProfileService} from "../services/profile.service";
 
 @Controller('calls')
 @UseGuards(AuthGuard('jwt'))
@@ -19,8 +31,53 @@ export class CallController
 {
     constructor(
         private readonly service: CallService,
-        private readonly memberService: CallMemberService
+        private readonly memberService: CallMemberService,
+        private readonly profileService: ProfileService
     ) {
+    }
+
+    @Get('list')
+    async list(
+        @CurrentUser() user: ClientUserDocument,
+        @Query('isDirect', new DefaultValuePipe(false), ParseBoolPipe) isDirect: boolean,
+        @Query('lastDate') lastDate: Date = null,
+        @Query('latestId') latestId: string = null
+    )
+    {
+        const calls: CallDocument[] = await this.service.getList(user, { lastDate, latestId }, isDirect);
+
+        const userHash = {};
+        calls.forEach(call => {
+            call.members.forEach(member => {
+                if (!userHash[member.user.id])
+                {
+                    userHash[member.user.id] = member.user;
+                }
+            })
+        });
+
+        const banStatuses = await this.profileService.getBanStatuses(user, Object.values(userHash));
+
+        const result = calls.map((call) => {
+
+            return {
+                // @ts-ignore
+                ...call.serialize(),
+                members: call.members.map(member => {
+                    return {
+                        // @ts-ignore
+                        ...member.serialize(),
+                        // @ts-ignore
+                        user: member.user.serialize()
+                    };
+                })
+            }
+        });
+
+        return {
+            calls: result,
+            banStatuses
+        };
     }
 
     @Post('initiate')

@@ -4,6 +4,7 @@ import {Document, Schema as MongooseSchema} from 'mongoose';
 import {Exclude, Expose} from 'class-transformer';
 import {createSerializer} from '../serializer/serializer';
 import {ConversationDocument} from "./conversation.schema";
+import {CallMember, CallMemberDocument} from "./call-member.schema";
 
 export enum CallStatus {
     INITIATED = 0,
@@ -57,6 +58,12 @@ export class Call extends BaseSchema
         default: null
     })
     conversation: ConversationDocument;
+
+    @Prop({
+        type: [MongooseSchema.Types.ObjectId],
+        ref: CallMember.name,
+    })
+    members: CallMemberDocument[];
 }
 
 const CallSchema = SchemaFactory.createForClass(Call);
