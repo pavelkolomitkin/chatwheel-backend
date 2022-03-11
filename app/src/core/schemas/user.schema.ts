@@ -5,8 +5,6 @@ import {AdminUser} from './admin-user.schema';
 import {Exclude, Expose} from 'class-transformer';
 import {createSerializer} from '../serializer/serializer';
 import {BaseSchema} from './base.schema';
-import * as mongooseDelete from 'mongoose-delete';
-import {aggregate} from '../middlewares/soft-delete-entity.middleware';
 
 export type UserDocument = Document & User;
 
@@ -84,6 +82,22 @@ export class User extends BaseSchema {
         required: false
     })
     blockingReason: string;
+
+    @Expose()
+    @Prop({
+        type: MongooseSchema.Types.Boolean,
+        required: false,
+        default: null
+    })
+    deleted: boolean;
+
+    @Expose()
+    @Prop({
+        type: MongooseSchema.Types.Date,
+        required: false,
+        default: null
+    })
+    deletedAt: Date;
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
@@ -109,8 +123,5 @@ UserSchema.methods.setAvatar = function(file = null) {
     };
 };
 UserSchema.methods.serialize = createSerializer([User]);
-
-UserSchema.plugin(mongooseDelete, { deletedAt : true, overrideMethods: 'all' });
-UserSchema.pre('aggregate', aggregate);
 
 export {UserSchema};

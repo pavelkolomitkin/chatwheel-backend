@@ -197,7 +197,8 @@ import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schema
         EntityExistsValidator,
         SecurityModule,
         MulterModule,
-        UploadManagerService
+        UploadManagerService,
+        ImageThumbService
     ]
 })
 export class CoreModule {}

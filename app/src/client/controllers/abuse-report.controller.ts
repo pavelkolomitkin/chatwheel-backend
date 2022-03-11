@@ -9,6 +9,7 @@ import {AbuseReportService} from "../services/abuse-report.service";
 import {AbuseReportDocument} from "../../core/schemas/abuse-report.schema";
 import {AuthGuard} from "@nestjs/passport";
 import {ProfileService} from "../services/profile.service";
+import {ValidateUserPipe} from "../pipes/validate-user.pipe";
 
 @Controller('abuse-report')
 @UseGuards(AuthGuard('jwt'))
@@ -29,7 +30,7 @@ export class AbuseReportController
             field: 'id',
             paramName: 'recipientId',
             sourceType: ParameterConverterSourceType.BODY
-        }, ParameterConverterPipe) recipient: ClientUserDocument,
+        }, ParameterConverterPipe, ValidateUserPipe) recipient: ClientUserDocument,
         @ParameterConverter({
             model: AbuseReportType.name,
             field: 'id',

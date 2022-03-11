@@ -9,6 +9,7 @@ import {ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ConversationDocument} from "../../core/schemas/conversation.schema";
 import {MessageDocument} from "../../core/schemas/message.schema";
 import {ConversationMessage, ConversationMessageDocument} from "../../core/schemas/conversation-message.schema";
+import {createDeflateRaw} from "zlib";
 
 @Injectable()
 export class ConversationMessageListService

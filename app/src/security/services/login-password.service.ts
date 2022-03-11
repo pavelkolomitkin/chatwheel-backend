@@ -49,13 +49,30 @@ export class LoginPasswordService extends BaseService
         }
     }
 
+    handleDeletedUser(user: ClientUserDocument)
+    {
+        // @ts-ignore
+        if (user.deleted)
+        {
+            throw new BadRequestException('The account was deleted!');
+        }
+    }
+
+    async getNotDeletedUserByEmail(email: string)
+    {
+        return this.userModel.findOne({
+            email,
+            deleted: {
+                $ne: true
+            }
+        });
+    }
+
     async login(credentials: LoginPasswordCredentialsDto): Promise<string>
     {
         const { email, password } = credentials;
 
-        const user: ClientUserDocument = await this.userModel.findOne({
-            email
-        });
+        const user: ClientUserDocument = await this.getNotDeletedUserByEmail(email);
 
         if (!user)
         {
@@ -78,7 +95,11 @@ export class LoginPasswordService extends BaseService
     {
         const { email } = data;
 
-        const user: ClientUserDocument = await this.userModel.findOne({ email });
+        const user: ClientUserDocument = await this.getNotDeletedUserByEmail(email);
+        if (!user)
+        {
+            throw new BadRequestException('The account is not found!');
+        }
 
         this.handleBlockedUser(user);
         this.handleInActiveUser(user);
@@ -132,6 +153,9 @@ export class LoginPasswordService extends BaseService
 
         const user: ClientUserDocument = key.user;
 
+        this.handleDeletedUser(user);
+
+
         user.isActivated = true;
         await user.save();
         await key.remove();
@@ -145,6 +169,8 @@ export class LoginPasswordService extends BaseService
 
         const keyEntity: RestoreUserPasswordKey = await this.restorePasswordKeyService.getValidKey(key);
         const user: ClientUserDocument = keyEntity.user;
+
+        this.handleDeletedUser(user);
 
         user.password = await this.getHashedPassword(password);
         await user.save();

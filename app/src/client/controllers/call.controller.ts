@@ -24,6 +24,7 @@ import {CallMemberLink, CallMemberLinkDocument} from "../../core/schemas/call-me
 import {CallMemberService} from "../services/call-member.service";
 import {CallMemberDocument} from "../../core/schemas/call-member.schema";
 import {ProfileService} from "../services/profile.service";
+import {ValidateUserPipe} from "../pipes/validate-user.pipe";
 
 @Controller('calls')
 @UseGuards(AuthGuard('jwt'))
@@ -89,7 +90,7 @@ export class CallController
             field: 'id',
             paramName: 'addresseeId',
             sourceType: ParameterConverterSourceType.BODY
-        }, ParameterConverterPipe) addressee: ClientUserDocument,
+        }, ParameterConverterPipe, ValidateUserPipe) addressee: ClientUserDocument,
         @Body() data: InitiateCallDto
     )
     {

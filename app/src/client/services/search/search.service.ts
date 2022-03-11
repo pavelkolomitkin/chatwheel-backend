@@ -54,12 +54,14 @@ export class SearchService
         const boundaries = this.getViewBoxPath(box);
 
         const result: ClientUserDocument[] = await this.userModel.find({
-            geoLocation: {
-                $geoWithin: {
-                    $box: boundaries
-                }
-            }
-        });
+                geoLocation: {
+                    $geoWithin: {
+                        $box: boundaries
+                    }
+                },
+                deleted: { $ne: true }
+            },
+        );
 
         return result;
     }
@@ -76,7 +78,8 @@ export class SearchService
                 $geometry: user.geoLocation,
                 $maxDistance: maxDistance
             },
-            _id: { $ne: user._id }
+            _id: { $ne: user._id },
+            deleted: { $ne: true }
         })
             .populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '))
             .skip(offset)
