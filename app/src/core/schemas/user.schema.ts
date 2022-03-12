@@ -54,8 +54,8 @@ export class User extends BaseSchema {
     })
     fullName: string;
 
-    // @Expose()
-    // roles: string;
+    @Expose()
+    roles: string[];
 
     @Expose()
     @Prop({

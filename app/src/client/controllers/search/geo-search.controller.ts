@@ -5,9 +5,13 @@ import {CurrentUser} from "../../../core/decorators/user.decorator";
 import {ClientUserDocument} from "../../../core/schemas/client-user.schema";
 import {SearchService} from "../../services/search/search.service";
 import {ProfileService} from "../../services/profile.service";
+import {Roles} from "../../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../../core/guards/role-based.guard";
 
 @Controller('search/geo')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class GeoSearchController
 {
     constructor(

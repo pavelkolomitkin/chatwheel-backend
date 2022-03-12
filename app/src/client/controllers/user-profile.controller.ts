@@ -7,9 +7,13 @@ import {AuthGuard} from "@nestjs/passport";
 import {UserProfileService} from "../services/user-profile.service";
 import {ProfileService} from "../services/profile.service";
 import {ValidateUserPipe} from "../pipes/validate-user.pipe";
+import {Roles} from "../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../core/guards/role-based.guard";
 
 @Controller('user-profile')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class UserProfileController
 {
     constructor(

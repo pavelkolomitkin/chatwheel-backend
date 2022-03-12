@@ -20,9 +20,13 @@ import {
     ChatRouletteOfferDocument,
     ChatRouletteOfferType
 } from "../../../core/schemas/chat-roulette-offer.schema";
+import {Roles} from "../../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../../core/guards/role-based.guard";
 
 @Controller('chat-roulette')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class ChatRouletteController
 {
     constructor(

@@ -1,5 +1,5 @@
 import {ClassSerializerInterceptor, Global, Module} from '@nestjs/common';
-import {APP_FILTER, APP_INTERCEPTOR, APP_PIPE} from '@nestjs/core';
+import {APP_FILTER, APP_INTERCEPTOR, APP_GUARD} from '@nestjs/core';
 import {BadRequestFilter} from './fiters/bad-request.filter';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {GlobalExceptionFilter} from './fiters/global-exception.filter';
@@ -40,6 +40,7 @@ import {ChatRouletteOffer, ChatRouletteOfferSchema} from "./schemas/chat-roulett
 import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schemas/chat-roulette-user-activity.schema";
 import {ConsoleModule} from "nestjs-console";
 import {AdminUserCli} from "./services/console/admin-user.cli";
+import {RoleBasedGuard} from "./guards/role-based.guard";
 
 @Global()
 @Module({
