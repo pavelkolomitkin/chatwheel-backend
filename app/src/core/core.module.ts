@@ -38,6 +38,8 @@ import {CallMember, CallMemberSchema} from "./schemas/call-member.schema";
 import {CallMemberLink, CallMemberLinkSchema} from "./schemas/call-member-link.schema";
 import {ChatRouletteOffer, ChatRouletteOfferSchema} from "./schemas/chat-roulette-offer.schema";
 import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schemas/chat-roulette-user-activity.schema";
+import {ConsoleModule} from "nestjs-console";
+import {AdminUserCli} from "./services/console/admin-user.cli";
 
 @Global()
 @Module({
@@ -166,7 +168,8 @@ import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schema
                 }
             }
         }),
-        SecurityModule
+        SecurityModule,
+        ConsoleModule
     ],
     providers: [
         {
@@ -185,6 +188,7 @@ import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schema
         EntityExistsValidator,
         ImageThumbService,
         UploadManagerService,
+        AdminUserCli
     ],
     controllers: [
         CountryController,

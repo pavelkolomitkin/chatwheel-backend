@@ -11,6 +11,7 @@ export type UserDocument = Document & User;
 export const ROLE_USER = 'ROLE_USER';
 export const ROLE_CLIENT_USER = 'ROLE_CLIENT_USER';
 export const ROLE_ADMIN_USER = 'ROLE_ADMIN_USER';
+export const ROLE_SUPER_ADMIN_USER = 'ROLE_SUPER_ADMIN_USER';
 
 @Exclude()
 @Schema({
@@ -53,8 +54,8 @@ export class User extends BaseSchema {
     })
     fullName: string;
 
-    @Expose()
-    roles: string;
+    // @Expose()
+    // roles: string;
 
     @Expose()
     @Prop({

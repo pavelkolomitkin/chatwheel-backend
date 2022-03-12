@@ -13,6 +13,11 @@ export class UserService extends BaseService
         super();
     }
 
+    getModel()
+    {
+        return this.model;
+    }
+
     getActivatedUserById(id: string)
     {
         return this.model
@@ -21,5 +26,10 @@ export class UserService extends BaseService
             isActivated: true,
             isBlocked: false
         });
+    }
+
+    getUserByEmail(email: string)
+    {
+        return this.model.findOne({email});
     }
 }

@@ -27,8 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy)
             throw new UnauthorizedException();
         }
 
+        // @ts-ignore
         if (user.roles.includes(ROLE_CLIENT_USER))
         {
+            // @ts-ignore
             if (user.roles.includes(ROLE_CLIENT_USER))
             {
                 await user

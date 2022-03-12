@@ -76,7 +76,9 @@ import {VkAuthController} from "./controllers/vk-auth.controller";
         MongooseModule,
         PassportModule,
         JwtModule,
-        WsJwtGuard
+        WsJwtGuard,
+        UserService,
+        LoginPasswordService
     ]
 })
 export class SecurityModule {}
