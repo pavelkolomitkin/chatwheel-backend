@@ -39,6 +39,12 @@ export class AbuseReport extends BaseSchema
         default: null
     })
     description: string;
+
+    @Prop({
+        type: MongooseSchema.Types.Boolean,
+        default: true
+    })
+    new: boolean;
 }
 
 export const AbuseReportSchema = SchemaFactory.createForClass(AbuseReport);

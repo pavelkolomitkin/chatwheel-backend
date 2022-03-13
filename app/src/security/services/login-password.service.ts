@@ -16,13 +16,15 @@ import {RestorePasswordKeyService} from './restore-password-key.service';
 import {RestoreUserPasswordKey} from '../schemas/restore-user-password-key.schema';
 import {RestorePasswordKeyExpirationException} from '../exceptions/restore-password-key-expiration.exception';
 import {RestorePasswordDto} from '../dto/restore-password.dto';
+import {ROLE_CLIENT_USER, User, UserDocument} from "../../core/schemas/user.schema";
 
 @Injectable()
 export class LoginPasswordService extends BaseService
 {
     // @ts-ignore
     constructor(
-        @InjectModel(ClientUser.name) private readonly userModel: Model<ClientUserDocument>,
+        @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+        @InjectModel(ClientUser.name) private readonly clientUserModel: Model<ClientUserDocument>,
         @InjectModel(ConfirmationUserAccountKey.name) private readonly confirmationKeyModel: Model<ConfirmationUserAccountKey>,
         private readonly confirmationKeyService: ConfirmationAccountKeyService,
         private readonly restorePasswordKeyService: RestorePasswordKeyService,
@@ -32,7 +34,7 @@ export class LoginPasswordService extends BaseService
         super();
     }
 
-    handleBlockedUser(user: ClientUserDocument)
+    handleBlockedUser(user: UserDocument)
     {
         if (user.isBlocked)
         {
@@ -68,11 +70,21 @@ export class LoginPasswordService extends BaseService
         });
     }
 
+    async getNotDeletedClientUserByEmail(email: string)
+    {
+        return this.clientUserModel.findOne({
+            email,
+            deleted: {
+                $ne: true
+            }
+        });
+    }
+
     async login(credentials: LoginPasswordCredentialsDto): Promise<string>
     {
         const { email, password } = credentials;
 
-        const user: ClientUserDocument = await this.getNotDeletedUserByEmail(email);
+        const user: UserDocument = await this.getNotDeletedUserByEmail(email);
 
         if (!user)
         {
@@ -86,7 +98,11 @@ export class LoginPasswordService extends BaseService
         }
 
         this.handleBlockedUser(user);
-        this.handleInActiveUser(user);
+
+        if (user.roles.indexOf(ROLE_CLIENT_USER) !== -1)
+        {
+            this.handleInActiveUser(<ClientUserDocument>user);
+        }
 
         return this.tokenService.getUserToken(user);
     }
@@ -95,7 +111,7 @@ export class LoginPasswordService extends BaseService
     {
         const { email } = data;
 
-        const user: ClientUserDocument = await this.getNotDeletedUserByEmail(email);
+        const user: ClientUserDocument = await this.getNotDeletedClientUserByEmail(email);
         if (!user)
         {
             throw new BadRequestException('The account is not found!');
@@ -127,7 +143,7 @@ export class LoginPasswordService extends BaseService
 
         const passwordHashed = await this.getHashedPassword(password);
 
-        const result = new this.userModel({
+        const result = new this.clientUserModel({
             email: email,
             password: passwordHashed,
             fullName: fullName
