@@ -1,9 +1,10 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {ClientUser, ClientUserDocument, SocialMediaType} from "../../core/schemas/client-user.schema";
-import {Model, Types, Query} from 'mongoose';
+import {Model, Query, Types} from 'mongoose';
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {getPageLimitOffset} from "../../core/utils";
+import {SortingType} from "../../core/models/data/sorting-type.enum";
 
 export enum AuthUserTypes {
     EMAIL,
@@ -71,7 +72,7 @@ export class ClientUserService
             return;
         }
 
-        const sortFieldType: number = criteria.sortType === 'ask' ? 1 : -1;
+        const sortFieldType: number = criteria.sortType === SortingType.ASC ? 1 : -1;
 
         query.sort({
             [sortFieldName]: sortFieldType
