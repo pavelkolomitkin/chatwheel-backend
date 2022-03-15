@@ -5,12 +5,11 @@ import {AdminUserDocument} from '../../core/schemas/admin-user.schema';
 import {RoleBasedGuard} from '../../core/guards/role-based.guard';
 import {Roles} from '../../core/decorators/role.decorator';
 import {ROLE_ADMIN_USER} from '../../core/schemas/user.schema';
-import {ClientUserService} from "../services/client-user.service";
+import {AuthUserTypes, ClientUserService} from "../services/client-user.service";
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
-import {ValidateUserPipe} from "../../core/pipes/validate-user.pipe";
 
 @Controller('client-user')
 @Roles(ROLE_ADMIN_USER)
@@ -43,7 +42,7 @@ export class ClientUserController
     @Get('number')
     async getNumber(
         @CurrentUser() user: AdminUserDocument,
-        @Query('type') type: number = null
+        @Query('type') type: AuthUserTypes = null
     )
     {
         const number: number = await this.service.getNumber(type);

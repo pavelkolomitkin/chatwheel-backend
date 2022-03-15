@@ -7,8 +7,8 @@ import {getPageLimitOffset} from "../../core/utils";
 import {SortingType} from "../../core/models/data/sorting-type.enum";
 
 export enum AuthUserTypes {
-    EMAIL,
-    VK
+    EMAIL = 'email',
+    VK = 'vk'
 }
 
 
@@ -81,24 +81,33 @@ export class ClientUserService
 
     handleSearchFilter(filter: any, criteria: ClientUserFilterDto)
     {
-        if (criteria.isActivated)
-        {
-            filter.isActivated = true
-        }
-        else
-        {
-            const andMatchCriteria = [];
+        const andMatchCriteria = [];
 
-            this.handleUserTypeSearchCriteria(andMatchCriteria, criteria);
-            this.handleBlockedSearchCriteria(andMatchCriteria, criteria);
-            this.handleDeletedSearchCriteria(andMatchCriteria, criteria);
-            this.handleResidenceCountrySearchCriteria(andMatchCriteria, criteria);
+        this.handleUserTypeSearchCriteria(andMatchCriteria, criteria);
+        this.handleBlockedSearchCriteria(andMatchCriteria, criteria);
+        this.handleDeletedSearchCriteria(andMatchCriteria, criteria);
+        this.handleResidenceCountrySearchCriteria(andMatchCriteria, criteria);
+        this.handleSearchCountrySearchCriteria(andMatchCriteria, criteria);
+        this.handleNotActivatedUserSearchCriteria(andMatchCriteria, criteria);
+
+        if (andMatchCriteria.length > 0)
+        {
+            filter.$and = andMatchCriteria;
+        }
+    }
+
+    handleNotActivatedUserSearchCriteria(filter: any[], criteria: ClientUserFilterDto)
+    {
+
+        if (criteria.isNotActivated === 'true')
+        {
+            filter.push({ isActivated: false });
         }
     }
 
     handleUserTypeSearchCriteria(filter: any[], criteria: ClientUserFilterDto)
     {
-        const typeCriteria = this.getUserTypeSearchCriteria(criteria.userType);
+        const typeCriteria = this.getUserTypeSearchCriteria(criteria.authType);
         if (typeCriteria)
         {
             filter.push(typeCriteria);
@@ -107,7 +116,7 @@ export class ClientUserService
 
     handleBlockedSearchCriteria(filter: any[], criteria: ClientUserFilterDto)
     {
-        if (criteria.isBlocked)
+        if (criteria.isBlocked === 'true')
         {
             filter.push({isBlocked: true})
         }
@@ -115,7 +124,7 @@ export class ClientUserService
 
     handleDeletedSearchCriteria(filter: any[], criteria: ClientUserFilterDto)
     {
-        if (criteria.deleted)
+        if (criteria.isDeleted === 'true')
         {
             filter.push({ deleted: true });
         }
@@ -126,6 +135,14 @@ export class ClientUserService
         if (criteria.residenceCountry)
         {
             filter.push({ residenceCountry: new Types.ObjectId(criteria.residenceCountry) });
+        }
+    }
+
+    handleSearchCountrySearchCriteria(filter: any[], criteria: ClientUserFilterDto)
+    {
+        if (criteria.searchCountry)
+        {
+            filter.push({ searchCountry: new Types.ObjectId(criteria.searchCountry) });
         }
     }
 

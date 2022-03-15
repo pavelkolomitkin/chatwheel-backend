@@ -5,9 +5,10 @@ export class ClientUserFilterDto
 {
     sortField?: string;
     sortType?: SortingType;
-    userType?: AuthUserTypes;
-    isActivated?: boolean;
-    isBlocked?: boolean;
+    authType?: AuthUserTypes;
+    isNotActivated?: string;
+    isBlocked?: string;
     residenceCountry?: string;
-    deleted?: boolean;
+    searchCountry?: string;
+    isDeleted?: string;
 }
