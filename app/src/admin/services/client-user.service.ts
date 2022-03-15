@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {BadRequestException, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {ClientUser, ClientUserDocument, SocialMediaType} from "../../core/schemas/client-user.schema";
 import {Model, Types, Query} from 'mongoose';
@@ -33,12 +33,25 @@ export class ClientUserService
 
         this.handleSearchFilter(filter, searchFilter);
 
-        const query = this.model.find(filter);
+        const query = this
+            .model
+            .find(filter)
+            .populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
 
         this.handleSortCriteria(query, searchFilter);
         this.handleSearchLimits(query, page);
 
         return query;
+    }
+
+    async getListTotalUserNumber(searchFilter: ClientUserFilterDto)
+    {
+        const filter: any = {};
+
+        this.handleSearchFilter(filter, searchFilter);
+
+        const query = this.model.find(filter);
+        return query.count();
     }
 
     handleSearchLimits(query: Query<any, any>, page: number)
@@ -143,5 +156,49 @@ export class ClientUserService
         }
 
         return this.model.find(filter).count();
+    }
+
+    async block(user: ClientUserDocument, reason: string = null)
+    {
+        if (user.isBlocked)
+        {
+            throw new BadRequestException(`The user is already blocked!`);
+        }
+
+        user.isBlocked = true;
+        user.blockingReason = reason;
+
+        await user.save();
+
+        return user;
+    }
+
+    async unBlock(user: ClientUserDocument)
+    {
+        if (!user.isBlocked)
+        {
+            throw new BadRequestException(`The user is not blocked yet!`);
+        }
+
+        user.isBlocked = false;
+
+        await user.save();
+
+        return user;
+    }
+
+    async delete(user: ClientUserDocument)
+    {
+        if (user.deleted)
+        {
+            throw new BadRequestException(`This user is already deleted!`);
+        }
+
+        user.deleted = true;
+        user.deletedAt = new Date();
+
+        await user.save();
+
+        return user;
     }
 }

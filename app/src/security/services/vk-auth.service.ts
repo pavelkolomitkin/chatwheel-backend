@@ -1,11 +1,11 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
 import {HttpService} from "@nestjs/axios";
-import { AxiosResponse } from 'axios'
 import {VkAuthDto} from "../dto/vk-auth.dto";
 import {InjectModel} from "@nestjs/mongoose";
 import {ClientUser, ClientUserDocument, SocialMediaType} from "../../core/schemas/client-user.schema";
 import {Model} from "mongoose";
 import {SecurityTokenService} from "./security-token.service";
+import {UserAccessorService} from "./user-accessor/user-accessor.service";
 
 @Injectable()
 export class VkAuthService
@@ -13,12 +13,14 @@ export class VkAuthService
     constructor(
         private readonly http: HttpService,
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
-        private readonly tokenService: SecurityTokenService
+        private readonly tokenService: SecurityTokenService,
+        private readonly userAccessor: UserAccessorService
     ) {
     }
 
     async auth(data: VkAuthDto): Promise<string | null>
     {
+        debugger
         // make a request to the url https://api.vk.com/method/user_ids?v=5.131&access_token=
         // @ts-ignore
         const {
@@ -42,14 +44,16 @@ export class VkAuthService
             about,
         } = await this.getApiUserData(data);
 
+        debugger
         // find a user with the id = data.userId and type=vk among ClientUser
-        let user: ClientUserDocument = await this.getUser(id.toString());
+        let user: ClientUserDocument = <ClientUserDocument> await this.userAccessor.getActualVkUser(id.toString());
 
         // if there is no one
             // create a new one with the corresponding fields received from the vk api url
             // grab the user's photo and upload it
         if (!user)
         {
+            debugger
             user = new this.model({
                 fullName: first_name + ' ' + last_name,
                 about: about,
@@ -61,14 +65,25 @@ export class VkAuthService
                     photo_200,
                     photo_200_orig,
                     photo_400_orig,
-                }
+                },
+                isActivated: true
             });
 
-            await user.save();
+            user = await this.model.findOneAndUpdate(
+                {
+                    socialMediaType: SocialMediaType.VK,
+                    socialMediaUserId: id.toString(),
+                },
+                user,
+                {
+                    new: true,
+                    upsert: true
+                }
+            );
         }
         else
         {
-            this.validateUser(user);
+            debugger
             user.socialMediaPhotos = {
                 photo_50,
                 photo_100,
@@ -80,29 +95,12 @@ export class VkAuthService
             await user.save();
         }
 
-
         // create a new jwt token for the user
         const result: string = this.tokenService.getUserToken(user);
 
-
+        debugger
         // return the token
         return result;
-    }
-
-    validateUser(user: ClientUserDocument)
-    {
-        if (user.isBlocked)
-        {
-            throw new BadRequestException(`Your account has been blocked!`);
-        }
-    }
-
-    getUser(vkId: string)
-    {
-        return this.model.findOne({
-            socialMediaUserId: vkId,
-            socialMediaType: SocialMediaType.VK,
-        });
     }
 
     async getApiUserData(data: VkAuthDto): Promise<any>

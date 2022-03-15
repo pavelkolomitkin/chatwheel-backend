@@ -70,13 +70,14 @@ export class User extends BaseSchema {
     })
     lastActivity: Date;
 
-    @Expose()
+    @Expose({ groups: ['admin'] })
     @Prop({
         type: MongooseSchema.Types.Boolean,
         default: false
     })
     isBlocked: boolean;
 
+    @Expose({ groups: ['admin'] })
     @Prop({
         type: MongooseSchema.Types.String,
         default: null,

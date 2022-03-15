@@ -2,15 +2,18 @@ import {PassportStrategy} from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
-import {ROLE_CLIENT_USER, User, UserDocument} from "../../core/schemas/user.schema";
+import {UserDocument} from "../../core/schemas/user.schema";
 import {UserService} from "./user.service";
+import {UserAccessorService} from "./user-accessor/user-accessor.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy)
 {
     constructor(
         private readonly config: ConfigService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly userAccessor: UserAccessorService
+
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -20,24 +23,18 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
     async validate({ id })
     {
-        const user: UserDocument = await this.userService.getActivatedUserById(id);
-
-        if (!user)
+        let user: UserDocument = null
+        try {
+            user = await this.userAccessor.getActualUserById(id);
+        }
+        catch (error)
         {
             throw new UnauthorizedException();
         }
 
-        // @ts-ignore
-        if (user.roles.includes(ROLE_CLIENT_USER))
+        if (!user)
         {
-            // @ts-ignore
-            if (user.roles.includes(ROLE_CLIENT_USER))
-            {
-                await user
-                    .populate('residenceCountry searchCountry interests geoLocation')
-
-                ;
-            }
+            throw new UnauthorizedException();
         }
 
         await this.userService.updateLastActivity(user);

@@ -9,7 +9,7 @@ import {AbuseReportService} from "../services/abuse-report.service";
 import {AbuseReportDocument} from "../../core/schemas/abuse-report.schema";
 import {AuthGuard} from "@nestjs/passport";
 import {ProfileService} from "../services/profile.service";
-import {ValidateUserPipe} from "../pipes/validate-user.pipe";
+import {ValidateUserPipe} from "../../core/pipes/validate-user.pipe";
 import {Roles} from "../../core/decorators/role.decorator";
 import {ROLE_CLIENT_USER} from "../../core/schemas/user.schema";
 import {RoleBasedGuard} from "../../core/guards/role-based.guard";

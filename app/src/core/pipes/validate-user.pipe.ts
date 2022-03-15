@@ -1,10 +1,11 @@
 import {ArgumentMetadata, BadRequestException, Injectable, PipeTransform} from "@nestjs/common";
-import {ClientUserDocument} from "../../core/schemas/client-user.schema";
+import {ROLE_CLIENT_USER, UserDocument} from "../schemas/user.schema";
+import {ClientUserDocument} from "../schemas/client-user.schema";
 
 @Injectable()
 export class ValidateUserPipe implements PipeTransform
 {
-    transform(value: ClientUserDocument, metadata: ArgumentMetadata): ClientUserDocument {
+    transform(value: UserDocument, metadata: ArgumentMetadata): UserDocument {
 
         // @ts-ignore
         if (value.deleted)
@@ -15,6 +16,14 @@ export class ValidateUserPipe implements PipeTransform
         if (value.isBlocked)
         {
             throw new BadRequestException('The account was blocked!');
+        }
+
+        if (value.roles.includes(ROLE_CLIENT_USER))
+        {
+            if (!(<ClientUserDocument>value).isActivated)
+            {
+                throw new BadRequestException('The account is not activated!');
+            }
         }
 
         return value;

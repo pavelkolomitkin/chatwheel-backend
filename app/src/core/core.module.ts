@@ -1,5 +1,5 @@
 import {ClassSerializerInterceptor, Global, Module} from '@nestjs/common';
-import {APP_FILTER, APP_INTERCEPTOR, APP_GUARD} from '@nestjs/core';
+import {APP_FILTER, APP_INTERCEPTOR, APP_GUARD, APP_PIPE} from '@nestjs/core';
 import {BadRequestFilter} from './fiters/bad-request.filter';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {GlobalExceptionFilter} from './fiters/global-exception.filter';

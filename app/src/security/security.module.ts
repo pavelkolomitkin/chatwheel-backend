@@ -25,6 +25,7 @@ import {JwtAuthService} from "./services/jwt-auth.service";
 import {HttpModule} from "@nestjs/axios";
 import {VkAuthService} from "./services/vk-auth.service";
 import {VkAuthController} from "./controllers/vk-auth.controller";
+import {UserAccessorService} from "./services/user-accessor/user-accessor.service";
 
 @Module({
     imports: [
@@ -57,6 +58,7 @@ import {VkAuthController} from "./controllers/vk-auth.controller";
         VkAuthController
     ],
     providers: [
+        UserAccessorService,
         JwtStrategy,
         SecurityTokenService,
         UserService,

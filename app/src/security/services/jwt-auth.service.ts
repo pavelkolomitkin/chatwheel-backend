@@ -1,14 +1,14 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
-import {UserService} from "./user.service";
-import {CoreException} from "../../core/exceptions/core.exception";
+import {UserDocument} from "../../core/schemas/user.schema";
+import {UserAccessorService} from "./user-accessor/user-accessor.service";
 
 @Injectable()
 export class JwtAuthService
 {
     constructor(
-        private jwtService: JwtService,
-        private userService: UserService
+        private readonly jwtService: JwtService,
+        private readonly userAccessor: UserAccessorService
 
     ) {}
 
@@ -21,10 +21,13 @@ export class JwtAuthService
         }
 
         const { id } = payload;
-        const user = await this.userService.getActivatedUserById(id);
-        if (!user)
+        let user: UserDocument = null;
+        try {
+            user = await this.userAccessor.getActualUserById(id);
+        }
+        catch (error)
         {
-            throw new CoreException('The user is not found!');
+            throw new UnauthorizedException();
         }
 
         return user;

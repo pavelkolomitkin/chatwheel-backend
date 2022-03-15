@@ -1,10 +1,10 @@
-import {ROLE_ADMIN_USER, ROLE_SUPER_ADMIN_USER, User} from "./user.schema";
+import {ROLE_ADMIN_USER, ROLE_SUPER_ADMIN_USER, User, UserDocument} from "./user.schema";
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Exclude, Expose} from "class-transformer";
 import {createSerializer} from "../serializer/serializer";
 import {Schema as MongooseSchema} from "mongoose";
 
-export type AdminUserDocument = User & AdminUser
+export type AdminUserDocument = UserDocument & AdminUser
 
 @Exclude()
 @Schema({
