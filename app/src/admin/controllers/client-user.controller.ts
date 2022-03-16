@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, ParseIntPipe, Put, Query, UseGuards} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, HttpStatus, ParseIntPipe, Put, Query, UseGuards} from '@nestjs/common';
 import {AuthGuard} from '@nestjs/passport';
 import {CurrentUser} from '../../core/decorators/user.decorator';
 import {AdminUserDocument} from '../../core/schemas/admin-user.schema';
@@ -22,6 +22,7 @@ export class ClientUserController
     }
 
     @Get('list')
+    @HttpCode(HttpStatus.OK)
     async list(
         @CurrentUser() user: AdminUserDocument,
         @Query() filter: ClientUserFilterDto,
@@ -37,6 +38,25 @@ export class ClientUserController
             totalNumber
         }
 
+    }
+
+    @Get('/user/:id')
+    @HttpCode(HttpStatus.OK)
+    async get(
+        @ParameterConverter({
+            model: ClientUser.name,
+            field: 'id',
+            paramName: 'id',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) user: ClientUserDocument
+    )
+    {
+        await user.populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
+
+        return {
+            // @ts-ignore
+            user: user.serialize(['admin'])
+        };
     }
 
     @Get('number')

@@ -39,8 +39,17 @@ export class UserAccessorService
         }
 
         this.validateClientUser(result);
+        await this.populateCommonFields(result);
 
         return result;
+    }
+
+    async populateCommonFields(user: UserDocument)
+    {
+        if (user.roles.includes(ROLE_CLIENT_USER))
+        {
+            await (<ClientUserDocument>user).populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
+        }
     }
 
     validateClientUser(user: UserDocument)

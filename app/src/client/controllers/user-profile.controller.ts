@@ -34,11 +34,11 @@ export class UserProfileController
         }, ParameterConverterPipe, ValidateUserPipe) user: ClientUserDocument
     )
     {
-        await user.populate('interests');
+        await user.populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
 
         return {
             // @ts-ignore
-            user: user.serialize(),
+            user: user.serialize(['details']),
             amIBanned: await this.profileService.isAddresseeBanned(user, currentUser),
             isBanned: await this.profileService.isAddresseeBanned(currentUser, user),
         };
