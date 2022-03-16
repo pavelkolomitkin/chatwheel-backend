@@ -1,18 +1,29 @@
 import {BaseSchema} from "./base.schema";
-import {ClientUserDocument} from "./client-user.schema";
+import {ClientUser, ClientUserDocument} from "./client-user.schema";
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Document, Schema as MongooseSchema} from "mongoose";
-import {AbuseReportTypeDocument} from "./abuse-report-type.schema";
+import {AbuseReportType, AbuseReportTypeDocument} from "./abuse-report-type.schema";
+import {Exclude, Expose, Type} from "class-transformer";
+import {createSerializer} from "../serializer/serializer";
 
 export type AbuseReportDocument = AbuseReport & Document;
 
 
+@Exclude()
 @Schema({
     id: true,
-    timestamps: true
+    timestamps: true,
+    toObject: {
+        virtuals: true
+    },
+    toJSON: {
+        virtuals: true
+    },
 })
 export class AbuseReport extends BaseSchema
 {
+    @Expose()
+    @Type(() => AbuseReportType)
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'AbuseReportType',
@@ -20,18 +31,23 @@ export class AbuseReport extends BaseSchema
     })
     type: AbuseReportTypeDocument;
 
+    @Expose()
+    @Type(() => ClientUser)
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'ClientUser',
     })
     applicant: ClientUserDocument;
 
+    @Expose()
+    @Type(() => ClientUser)
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: 'ClientUser',
     })
     respondent: ClientUserDocument;
 
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.String,
         required: false,
@@ -40,11 +56,32 @@ export class AbuseReport extends BaseSchema
     })
     description: string;
 
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.Boolean,
-        default: true
+        default: false
     })
     new: boolean;
 }
 
-export const AbuseReportSchema = SchemaFactory.createForClass(AbuseReport);
+
+
+const AbuseReportSchema = SchemaFactory.createForClass(AbuseReport);
+
+AbuseReportSchema.methods.serialize = function(groups: string[] = [])
+{
+    const result = {
+        id: this.id,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt,
+        new: this.new,
+        type: this.type.serialize(groups),
+        applicant: this.applicant.serialize(groups),
+        respondent: this.respondent.serialize(groups),
+        description: this.description
+    };
+
+    return result;
+}
+
+export { AbuseReportSchema };

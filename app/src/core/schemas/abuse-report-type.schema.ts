@@ -1,6 +1,7 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Document, Schema as MongooseSchema} from "mongoose";
 import {Exclude, Expose} from "class-transformer";
+import {createSerializer} from "../serializer/serializer";
 
 export type AbuseReportTypeDocument = Document & AbuseReportType;
 
@@ -33,4 +34,8 @@ export class AbuseReportType
     code: string;
 }
 
-export const AbuseReportTypeSchema = SchemaFactory.createForClass(AbuseReportType);
+const AbuseReportTypeSchema = SchemaFactory.createForClass(AbuseReportType);
+
+AbuseReportTypeSchema.methods.serialize = createSerializer([AbuseReportType]);
+
+export { AbuseReportTypeSchema };

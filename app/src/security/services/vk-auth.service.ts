@@ -20,7 +20,6 @@ export class VkAuthService
 
     async auth(data: VkAuthDto): Promise<string | null>
     {
-        debugger
         // make a request to the url https://api.vk.com/method/user_ids?v=5.131&access_token=
         // @ts-ignore
         const {
@@ -44,7 +43,7 @@ export class VkAuthService
             about,
         } = await this.getApiUserData(data);
 
-        debugger
+
         // find a user with the id = data.userId and type=vk among ClientUser
         let user: ClientUserDocument = <ClientUserDocument> await this.userAccessor.getActualVkUser(id.toString());
 
@@ -53,7 +52,6 @@ export class VkAuthService
             // grab the user's photo and upload it
         if (!user)
         {
-            debugger
             user = new this.model({
                 fullName: first_name + ' ' + last_name,
                 about: about,
@@ -83,7 +81,6 @@ export class VkAuthService
         }
         else
         {
-            debugger
             user.socialMediaPhotos = {
                 photo_50,
                 photo_100,
@@ -97,8 +94,7 @@ export class VkAuthService
 
         // create a new jwt token for the user
         const result: string = this.tokenService.getUserToken(user);
-
-        debugger
+        
         // return the token
         return result;
     }
