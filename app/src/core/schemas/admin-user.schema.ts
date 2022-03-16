@@ -17,6 +17,7 @@ export type AdminUserDocument = UserDocument & AdminUser
 })
 export class AdminUser
 {
+    @Expose()
     @Prop({
         type: MongooseSchema.Types.Boolean,
         required: false,
