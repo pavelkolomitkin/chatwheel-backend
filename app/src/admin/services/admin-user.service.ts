@@ -56,7 +56,7 @@ export class AdminUserService
         const result: AdminUserDocument = new this.model({
             email,
             fullName,
-            passwordHash,
+            password: passwordHash,
             isSuperAdmin: false
         });
 
