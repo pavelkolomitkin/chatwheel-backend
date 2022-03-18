@@ -3,6 +3,7 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {Exclude, Expose} from "class-transformer";
 import {createSerializer} from "../serializer/serializer";
 import {Schema as MongooseSchema} from "mongoose";
+import {userAvatarThumbsHook} from "../models/serialization/hooks/user.hooks";
 
 export type AdminUserDocument = UserDocument & AdminUser
 
@@ -40,6 +41,6 @@ AdminUserSchema.virtual('roles').get(function(){
     return result;
 });
 
-AdminUserSchema.methods.serialize = createSerializer([User, AdminUser]);
+AdminUserSchema.methods.serialize = createSerializer([User, AdminUser], userAvatarThumbsHook);
 
 export { AdminUserSchema };
