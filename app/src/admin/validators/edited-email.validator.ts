@@ -22,7 +22,7 @@ export class EditedEmailValidator implements ValidatorConstraintInterface
     async validate(value: string, validationArguments?: ValidationArguments): Promise<boolean> {
 
         const userId: string = validationArguments.object['id'];
-        if (!!userId)
+        if (!userId)
         {
             this.message = 'The user id is missing!';
             return false;

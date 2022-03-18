@@ -10,6 +10,7 @@ import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
+import {BlockUserDto} from "../dto/block-user.dto";
 
 @Controller('client-user')
 @Roles(ROLE_ADMIN_USER)
@@ -80,10 +81,11 @@ export class ClientUserController
             paramName: 'user',
             sourceType: ParameterConverterSourceType.BODY
         }, ParameterConverterPipe) user: ClientUserDocument,
-        @Body('reason') reason: string = null
+        //@Body('reason') reason: string = null
+        @Body() data: BlockUserDto
     )
     {
-        const blockedUser: ClientUserDocument = await this.service.block(user, reason);
+        const blockedUser: ClientUserDocument = await this.service.block(user, data);
 
         return {
             // @ts-ignore

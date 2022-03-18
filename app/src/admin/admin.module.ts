@@ -6,6 +6,7 @@ import {AbuseReportController} from "./controllers/abuse-report.controller";
 import {AdminUserController} from "./controllers/admin-user.controller";
 import {AdminUserService} from "./services/admin-user.service";
 import {EditedEmailValidator} from "./validators/edited-email.validator";
+import {AdminUserStateGateway} from "./gateways/admin-user-state.gateway";
 
 @Module({
     controllers: [
@@ -18,7 +19,9 @@ import {EditedEmailValidator} from "./validators/edited-email.validator";
         AbuseReportService,
         AdminUserService,
 
-        EditedEmailValidator
+        EditedEmailValidator,
+
+        AdminUserStateGateway
     ]
 })
 export class AdminModule {}

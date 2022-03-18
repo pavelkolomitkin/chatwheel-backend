@@ -11,6 +11,7 @@ import {ResetAdminPasswordDto} from "../dto/reset-admin-password.dto";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
 import {EditAdminUserDto} from "../dto/edit-admin-user.dto";
+import {BlockUserDto} from "../dto/block-user.dto";
 
 @Controller('admin-user')
 @Roles(ROLE_ADMIN_USER)
@@ -59,7 +60,7 @@ export class AdminUserController
 
         return {
             // @ts-ignore
-            admin: result.serialize()
+            admin: result.serialize(['admin'])
         };
     }
 
@@ -79,7 +80,7 @@ export class AdminUserController
 
         return {
             // @ts-ignore
-            admin: result.serialize()
+            admin: result.serialize(['admin'])
         };
     }
 
@@ -99,7 +100,47 @@ export class AdminUserController
 
         return {
             // @ts-ignore
-            admin: result.serialize()
+            admin: result.serialize(['admin'])
+        };
+    }
+
+    @Put('block/:adminId')
+    async block(
+        @CurrentUser() superAdmin: AdminUserDocument,
+        @ParameterConverter({
+            model: AdminUser.name,
+            field: 'id',
+            paramName: 'adminId',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) admin: AdminUserDocument,
+        @Body() data: BlockUserDto
+    )
+    {
+        const result: AdminUserDocument = await this.service.block(superAdmin, admin, data);
+
+        return {
+            // @ts-ignore
+            admin: result.serialize(['admin'])
+        };
+    }
+
+
+    @Put('un-block/:adminId')
+    async unBlock(
+        @CurrentUser() superAdmin: AdminUserDocument,
+        @ParameterConverter({
+            model: AdminUser.name,
+            field: 'id',
+            paramName: 'adminId',
+            sourceType: ParameterConverterSourceType.PARAM
+        }, ParameterConverterPipe) admin: AdminUserDocument
+    )
+    {
+        const result: AdminUserDocument = await this.service.unBlock(superAdmin, admin);
+
+        return {
+            // @ts-ignore
+            admin: result.serialize(['admin'])
         };
     }
 
@@ -118,7 +159,7 @@ export class AdminUserController
 
         return {
             // @ts-ignore
-            admin: result.serialize()
+            admin: result.serialize(['admin'])
         };
     }
 }

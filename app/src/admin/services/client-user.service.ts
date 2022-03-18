@@ -5,6 +5,8 @@ import {Model, Query, Types} from 'mongoose';
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {getPageLimitOffset} from "../../core/utils";
 import {SortingType} from "../../core/models/data/sorting-type.enum";
+import {dangerouslyDisableDefaultSrc} from "helmet/dist/types/middlewares/content-security-policy";
+import {BlockUserDto} from "../dto/block-user.dto";
 
 export enum AuthUserTypes {
     EMAIL = 'email',
@@ -176,12 +178,14 @@ export class ClientUserService
         return this.model.find(filter).count();
     }
 
-    async block(user: ClientUserDocument, reason: string = null)
+    async block(user: ClientUserDocument, data: BlockUserDto)
     {
         if (user.isBlocked)
         {
             throw new BadRequestException(`The user is already blocked!`);
         }
+
+        const { reason } = data;
 
         user.isBlocked = true;
         user.blockingReason = reason;

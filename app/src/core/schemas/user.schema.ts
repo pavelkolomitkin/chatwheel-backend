@@ -81,7 +81,8 @@ export class User extends BaseSchema {
     @Prop({
         type: MongooseSchema.Types.String,
         default: null,
-        required: false
+        required: false,
+        maxlength: 1000
     })
     blockingReason: string;
 
