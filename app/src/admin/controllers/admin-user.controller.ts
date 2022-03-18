@@ -12,6 +12,7 @@ import {ParameterConverter, ParameterConverterSourceType} from "../../core/decor
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
 import {EditAdminUserDto} from "../dto/edit-admin-user.dto";
 import {BlockUserDto} from "../dto/block-user.dto";
+import {AdminUserFilterDto} from "../dto/admin-user-filter.dto";
 
 @Controller('admin-user')
 @Roles(ROLE_ADMIN_USER)
@@ -26,7 +27,7 @@ export class AdminUserController
     @Get('number')
     async getNumber()
     {
-        const result: number = await this.service.getNumber();
+        const result: number = await this.service.getNumber({});
 
         return {
             number: result
@@ -36,11 +37,12 @@ export class AdminUserController
     @Get('list')
     async list(
         @CurrentUser() user: AdminUserDocument,
+        @Query() data: AdminUserFilterDto,
         @Query('page', ParseIntPipe) page: number = 1
     )
     {
-        const result: AdminUserDocument[] = await this.service.getList(page);
-        const totalNumber: number = await this.service.getNumber();
+        const result: AdminUserDocument[] = await this.service.getList(data, page);
+        const totalNumber: number = await this.service.getNumber(data);
 
         return {
             // @ts-ignore

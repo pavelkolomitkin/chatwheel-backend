@@ -1,6 +1,6 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
+import {Model, Query} from "mongoose";
 import {AdminUser, AdminUserDocument} from "../../core/schemas/admin-user.schema";
 import {getPageLimitOffset} from "../../core/utils";
 import {CreateAdminUserDto} from "../dto/create-admin-user.dto";
@@ -8,14 +8,24 @@ import {LoginPasswordService} from "../../security/services/login-password.servi
 import {ResetAdminPasswordDto} from "../dto/reset-admin-password.dto";
 import {EditAdminUserDto} from "../dto/edit-admin-user.dto";
 import {BlockUserDto} from "../dto/block-user.dto";
+import {AdminUserFilterDto} from "../dto/admin-user-filter.dto";
+import {UserService} from "./user.service";
 
 @Injectable()
-export class AdminUserService
+export class AdminUserService extends UserService
 {
+    static AVAILABLE_SORT_FIELD = {
+        email: 'email',
+        lastActivity: 'lastActivity',
+        fullName: 'fullName',
+        signUp: 'createdAt',
+    };
+
     constructor(
         @InjectModel(AdminUser.name) private readonly model: Model<AdminUserDocument>,
         private readonly loginPasswordService: LoginPasswordService
     ) {
+        super();
     }
 
     getModel()
@@ -23,24 +33,55 @@ export class AdminUserService
         return this.model;
     }
 
-    getNumber()
+    getNumber(searchFilter: AdminUserFilterDto)
     {
-        return this.model.find({}).count();
+        const filter: any = {};
+        this.handleSearchFilter(filter, searchFilter);
+
+        return  this
+            .model
+            .find(filter)
+            .count();
     }
 
-    async getList(page: number = 1)
+    handleSearchFilter(filter: any, searchFilter: AdminUserFilterDto)
     {
-        const { limit, offset } = getPageLimitOffset(page);
+        const andMatchFilter: any[] = [];
+        this.handleEmailSearchCriteria(andMatchFilter, searchFilter);
+        this.handleBlockedSearchCriteria(andMatchFilter, searchFilter);
+        this.handleDeletedSearchCriteria(andMatchFilter, searchFilter);
 
-        const result: AdminUserDocument[] = await this.model
-            .find({})
-            .sort({createdAt: -1})
-            .skip(offset)
-            .limit(limit)
-        ;
+        if (andMatchFilter.length > 0)
+        {
+            filter.$and = andMatchFilter;
+        }
+    }
 
+    async getList(searchFilter: AdminUserFilterDto, page: number = 1)
+    {
+        const filter: any = {};
+        this.handleSearchFilter(filter, searchFilter);
+
+        const query: Query<any, any> = this
+            .model
+            .find(filter);
+
+        this.handleSortCriteria(query, searchFilter, AdminUserService.AVAILABLE_SORT_FIELD);
+        this.handleSearchLimits(query, page);
+
+        const result: AdminUserDocument[] = await query;
 
         return result;
+    }
+
+    handleEmailSearchCriteria(filter: any, criteria: AdminUserFilterDto)
+    {
+        if (criteria.email)
+        {
+            filter.push({
+                email: criteria.email.trim()
+            });
+        }
     }
 
     validateSuperAdmin(admin: AdminUserDocument)

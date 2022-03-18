@@ -5,8 +5,8 @@ import {Model, Query, Types} from 'mongoose';
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {getPageLimitOffset} from "../../core/utils";
 import {SortingType} from "../../core/models/data/sorting-type.enum";
-import {dangerouslyDisableDefaultSrc} from "helmet/dist/types/middlewares/content-security-policy";
 import {BlockUserDto} from "../dto/block-user.dto";
+import {UserService} from "./user.service";
 
 export enum AuthUserTypes {
     EMAIL = 'email',
@@ -15,10 +15,8 @@ export enum AuthUserTypes {
 
 
 @Injectable()
-export class ClientUserService
+export class ClientUserService extends UserService
 {
-    static NUMBER_ITEMS_ON_PAGE = 10;
-
     static AVAILABLE_SORT_FIELD = {
         lastActivity: 'lastActivity',
         fullName: 'fullName',
@@ -28,6 +26,7 @@ export class ClientUserService
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>
     ) {
+        super();
     }
 
     async getList(searchFilter: ClientUserFilterDto, page: number = 1): Promise<ClientUserDocument[]>
@@ -41,7 +40,7 @@ export class ClientUserService
             .find(filter)
             .populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
 
-        this.handleSortCriteria(query, searchFilter);
+        this.handleSortCriteria(query, searchFilter, ClientUserService.AVAILABLE_SORT_FIELD);
         this.handleSearchLimits(query, page);
 
         return query;
@@ -55,30 +54,6 @@ export class ClientUserService
 
         const query = this.model.find(filter);
         return query.count();
-    }
-
-    handleSearchLimits(query: Query<any, any>, page: number)
-    {
-        const { limit, offset } = getPageLimitOffset(page, ClientUserService.NUMBER_ITEMS_ON_PAGE);
-
-        query
-            .skip(offset)
-            .limit(limit);
-    }
-
-    handleSortCriteria(query: Query<any, any>, criteria: ClientUserFilterDto)
-    {
-        const sortFieldName: string = ClientUserService.AVAILABLE_SORT_FIELD[criteria.sortField];
-        if (!sortFieldName)
-        {
-            return;
-        }
-
-        const sortFieldType: number = criteria.sortType === SortingType.ASC ? 1 : -1;
-
-        query.sort({
-            [sortFieldName]: sortFieldType
-        });
     }
 
     handleSearchFilter(filter: any, criteria: ClientUserFilterDto)
@@ -116,21 +91,7 @@ export class ClientUserService
         }
     }
 
-    handleBlockedSearchCriteria(filter: any[], criteria: ClientUserFilterDto)
-    {
-        if (criteria.isBlocked === 'true')
-        {
-            filter.push({isBlocked: true})
-        }
-    }
 
-    handleDeletedSearchCriteria(filter: any[], criteria: ClientUserFilterDto)
-    {
-        if (criteria.isDeleted === 'true')
-        {
-            filter.push({ deleted: true });
-        }
-    }
 
     handleResidenceCountrySearchCriteria(filter: any[], criteria: ClientUserFilterDto)
     {
