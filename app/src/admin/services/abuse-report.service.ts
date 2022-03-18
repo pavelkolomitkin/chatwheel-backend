@@ -1,23 +1,121 @@
-import {Injectable} from "@nestjs/common";
-import {InjectModel} from "@nestjs/mongoose";
-import {AbuseReport, AbuseReportDocument} from "../../core/schemas/abuse-report.schema";
-import {Model, Types} from "mongoose";
-import {ClientUserDocument} from "../../core/schemas/client-user.schema";
+import {Injectable} from '@nestjs/common';
+import {InjectModel} from '@nestjs/mongoose';
+import {AbuseReport, AbuseReportDocument} from '../../core/schemas/abuse-report.schema';
+import {Model, Query, Types} from 'mongoose';
+import {ClientUser, ClientUserDocument} from '../../core/schemas/client-user.schema';
 import * as _ from 'lodash';
+import {AbuseReportFilterDto} from '../dto/abuse-report-filter.dto';
+import {BaseService} from './base.service';
+import {Country} from "../../core/schemas/country.schema";
 
 @Injectable()
-export class AbuseReportService
+export class AbuseReportService extends BaseService
 {
+
+    static POPULATE_FIELDS = [
+        'applicant',
+        'respondent',
+        'type'
+    ]
+
+    static AVAILABLE_SORT_FIELDS = {
+        createdAt: 'createdAt',
+    };
+
+
     constructor(
         @InjectModel(AbuseReport.name) private readonly model: Model<AbuseReportDocument>
     ) {
+        super();
     }
 
-    getNewNumber()
+    async getList(searchFilter: AbuseReportFilterDto, page: number = 1)
     {
-        return this.model.find({
-            new: true
-        }).count();
+        const filter: any = {};
+
+        this.handleSearchCriteria(filter, searchFilter);
+
+        const query: Query<any, any> = this
+            .model
+            .find(filter)
+        ;
+
+        this.handleSortCriteria(query, searchFilter, AbuseReportService.AVAILABLE_SORT_FIELDS);
+        this.handleSearchLimits(query, page, 20);
+
+        const result: AbuseReportDocument[] = await query
+            .populate('type')
+            .populate({
+                path: 'applicant',
+                model: ClientUser.name,
+                populate: {
+                    path: 'residenceCountry',
+                    model: Country.name
+                }
+            })
+            .populate({
+                path: 'respondent',
+                model: ClientUser.name,
+                populate: {
+                    path: 'residenceCountry',
+                    model: Country.name
+                }
+            });
+
+        return result;
+    }
+
+    getSearchNumber(searchFilter: AbuseReportFilterDto)
+    {
+        const filter = {};
+
+        this.handleSearchCriteria(filter, searchFilter);
+
+        return this
+            .model
+            .find(filter)
+            .count()
+        ;
+    }
+
+    handleSearchCriteria(filter: any, criteria: any)
+    {
+        const andMatchCriteria: any[] = [];
+
+        this.handleNewSearchCriteria(andMatchCriteria, criteria);
+        this.handleTypeSearchCriteria(andMatchCriteria, criteria);
+
+        if (andMatchCriteria.length > 0)
+        {
+            filter.$and = andMatchCriteria;
+        }
+    }
+
+    handleNewSearchCriteria(filter: any[], criteria: any)
+    {
+        if (criteria.new === 'true')
+        {
+            filter.push({ new: true });
+        }
+    }
+
+    handleTypeSearchCriteria(filter: any[], criteria: any)
+    {
+        if (criteria.type)
+        {
+            filter.push({ type: new Types.ObjectId(criteria.type) })
+        }
+    }
+
+    getNumber(isNew: boolean = false)
+    {
+        const filter: any = {};
+        if (isNew)
+        {
+            filter.new = true;
+        }
+
+        return this.model.find(filter).count();
     }
 
     async getPeopleNumberApplied(addressee: ClientUserDocument)
@@ -78,7 +176,7 @@ export class AbuseReportService
             .find(filter)
             .sort({ createdAt: -1 })
             .limit(limit)
-            .populate('applicant respondent type');
+            .populate(AbuseReportService.POPULATE_FIELDS.join(' '));
 
         if (reports.length === 0)
         {

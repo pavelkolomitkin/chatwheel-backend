@@ -1,4 +1,4 @@
-import {Controller, Get, ParseBoolPipe, ParseIntPipe, Put, Query, UseGuards} from "@nestjs/common";
+import {Body, Controller, Get, ParseBoolPipe, ParseIntPipe, Put, Query, UseGuards} from "@nestjs/common";
 import {Roles} from "../../core/decorators/role.decorator";
 import {ROLE_ADMIN_USER} from "../../core/schemas/user.schema";
 import {AuthGuard} from "@nestjs/passport";
@@ -8,6 +8,7 @@ import {ParameterConverter, ParameterConverterSourceType} from "../../core/decor
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe";
 import {AbuseReport, AbuseReportDocument} from "../../core/schemas/abuse-report.schema";
+import {AbuseReportFilterDto} from "../dto/abuse-report-filter.dto";
 
 @Controller('abuse-report')
 @Roles(ROLE_ADMIN_USER)
@@ -19,10 +20,26 @@ export class AbuseReportController
     ) {
     }
 
+    @Get('list')
+    async getList(
+        @Query() data: AbuseReportFilterDto,
+        @Query('page', ParseIntPipe) page: number = 1
+    )
+    {
+        const reports: AbuseReportDocument[] = await this.service.getList(data, page);
+        const foundReportNumber: number = await this.service.getSearchNumber(data);
+
+        return {
+            // @ts-ignore
+            list: reports.map(item => item.serialize(['admin'])),
+            foundReportNumber: foundReportNumber,
+        };
+    }
+
     @Get('new-number')
     async getNewNumber()
     {
-        const number: number = await this.service.getNewNumber();
+        const number: number = await this.service.getNumber(true);
 
         return {
             number

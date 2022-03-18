@@ -2,7 +2,6 @@ import {BadRequestException, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model, Query} from "mongoose";
 import {AdminUser, AdminUserDocument} from "../../core/schemas/admin-user.schema";
-import {getPageLimitOffset} from "../../core/utils";
 import {CreateAdminUserDto} from "../dto/create-admin-user.dto";
 import {LoginPasswordService} from "../../security/services/login-password.service";
 import {ResetAdminPasswordDto} from "../dto/reset-admin-password.dto";
@@ -14,7 +13,7 @@ import {UserService} from "./user.service";
 @Injectable()
 export class AdminUserService extends UserService
 {
-    static AVAILABLE_SORT_FIELD = {
+    static AVAILABLE_SORT_FIELDS = {
         email: 'email',
         lastActivity: 'lastActivity',
         fullName: 'fullName',
@@ -66,7 +65,7 @@ export class AdminUserService extends UserService
             .model
             .find(filter);
 
-        this.handleSortCriteria(query, searchFilter, AdminUserService.AVAILABLE_SORT_FIELD);
+        this.handleSortCriteria(query, searchFilter, AdminUserService.AVAILABLE_SORT_FIELDS);
         this.handleSearchLimits(query, page);
 
         const result: AdminUserDocument[] = await query;

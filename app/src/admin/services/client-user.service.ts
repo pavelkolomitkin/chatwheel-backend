@@ -1,10 +1,8 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {ClientUser, ClientUserDocument, SocialMediaType} from "../../core/schemas/client-user.schema";
-import {Model, Query, Types} from 'mongoose';
+import {Model, Types} from 'mongoose';
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
-import {getPageLimitOffset} from "../../core/utils";
-import {SortingType} from "../../core/models/data/sorting-type.enum";
 import {BlockUserDto} from "../dto/block-user.dto";
 import {UserService} from "./user.service";
 
@@ -17,7 +15,7 @@ export enum AuthUserTypes {
 @Injectable()
 export class ClientUserService extends UserService
 {
-    static AVAILABLE_SORT_FIELD = {
+    static AVAILABLE_SORT_FIELDS = {
         lastActivity: 'lastActivity',
         fullName: 'fullName',
         signUp: 'createdAt'
@@ -40,7 +38,7 @@ export class ClientUserService extends UserService
             .find(filter)
             .populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
 
-        this.handleSortCriteria(query, searchFilter, ClientUserService.AVAILABLE_SORT_FIELD);
+        this.handleSortCriteria(query, searchFilter, ClientUserService.AVAILABLE_SORT_FIELDS);
         this.handleSearchLimits(query, page);
 
         return query;

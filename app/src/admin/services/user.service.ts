@@ -1,10 +1,7 @@
-import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
-import {Query} from "mongoose";
-import {SortingType} from "../../core/models/data/sorting-type.enum";
-import {getPageLimitOffset} from "../../core/utils";
-import {locale} from "moment";
+import {BaseService} from './base.service';
 
-export class UserService
+
+export class UserService extends BaseService
 {
     handleBlockedSearchCriteria(filter: any[], criteria: any)
     {
@@ -22,27 +19,4 @@ export class UserService
         }
     }
 
-    handleSortCriteria(query: Query<any, any>, criteria: any, availableFields: any)
-    {
-        const sortFieldName: string = availableFields[criteria.sortField];
-        if (!sortFieldName)
-        {
-            return;
-        }
-
-        const sortFieldType: number = criteria.sortType === SortingType.ASC ? 1 : -1;
-
-        query.sort({
-            [sortFieldName]: sortFieldType
-        }).collation({locale: 'en', strength: 1});
-    }
-
-    handleSearchLimits(query: Query<any, any>, page: number)
-    {
-        const { limit, offset } = getPageLimitOffset(page);
-
-        query
-            .skip(offset)
-            .limit(limit);
-    }
 }
