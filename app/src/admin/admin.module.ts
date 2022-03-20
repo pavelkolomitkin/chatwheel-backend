@@ -7,17 +7,21 @@ import {AdminUserController} from "./controllers/admin-user.controller";
 import {AdminUserService} from "./services/admin-user.service";
 import {EditedEmailValidator} from "./validators/edited-email.validator";
 import {AdminUserStateGateway} from "./gateways/admin-user-state.gateway";
+import {CallService} from "./services/call.service";
+import {CallController} from "./controllers/call.controller";
 
 @Module({
     controllers: [
         ClientUserController,
         AbuseReportController,
-        AdminUserController
+        AdminUserController,
+        CallController
     ],
     providers: [
         ClientUserService,
         AbuseReportService,
         AdminUserService,
+        CallService,
 
         EditedEmailValidator,
 
