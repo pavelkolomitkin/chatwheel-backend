@@ -5,7 +5,7 @@ import {AdminUserDocument} from '../../core/schemas/admin-user.schema';
 import {RoleBasedGuard} from '../../core/guards/role-based.guard';
 import {Roles} from '../../core/decorators/role.decorator';
 import {ROLE_ADMIN_USER} from '../../core/schemas/user.schema';
-import {AuthUserTypes, ClientUserService} from "../services/client-user.service";
+import {ClientUserService} from "../services/client-user.service";
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
@@ -57,19 +57,6 @@ export class ClientUserController
         return {
             // @ts-ignore
             user: user.serialize(['admin'])
-        };
-    }
-
-    @Get('number')
-    async getNumber(
-        @CurrentUser() user: AdminUserDocument,
-        @Query('type') type: AuthUserTypes = null
-    )
-    {
-        const number: number = await this.service.getNumber(type);
-
-        return {
-            number: number
         };
     }
 

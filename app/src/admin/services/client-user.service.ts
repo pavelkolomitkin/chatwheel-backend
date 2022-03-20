@@ -5,12 +5,7 @@ import {Model, Types} from 'mongoose';
 import {ClientUserFilterDto} from "../dto/client-user-filter.dto";
 import {BlockUserDto} from "../dto/block-user.dto";
 import {UserService} from "./user.service";
-
-export enum AuthUserTypes {
-    EMAIL = 'email',
-    VK = 'vk'
-}
-
+import {AuthUserTypes} from "../../core/models/data/auth-user-type.enum";
 
 @Injectable()
 export class ClientUserService extends UserService
@@ -122,19 +117,6 @@ export class ClientUserService extends UserService
             default:
                 return null;
         }
-    }
-
-    getNumber(type: AuthUserTypes = null)
-    {
-        let filter = {};
-
-        const typeCriteria = this.getUserTypeSearchCriteria(type);
-        if (typeCriteria)
-        {
-            filter = typeCriteria;
-        }
-
-        return this.model.find(filter).count();
     }
 
     async block(user: ClientUserDocument, data: BlockUserDto)

@@ -9,19 +9,23 @@ import {EditedEmailValidator} from "./validators/edited-email.validator";
 import {AdminUserStateGateway} from "./gateways/admin-user-state.gateway";
 import {CallService} from "./services/call.service";
 import {CallController} from "./controllers/call.controller";
+import {ClientUserStatisticsService} from "./services/statistics/client-user-statistics.service";
+import {UserStatisticsController} from "./controllers/statistics/user-statistics.controller";
 
 @Module({
     controllers: [
         ClientUserController,
         AbuseReportController,
         AdminUserController,
-        CallController
+        CallController,
+        UserStatisticsController
     ],
     providers: [
         ClientUserService,
         AbuseReportService,
         AdminUserService,
         CallService,
+        ClientUserStatisticsService,
 
         EditedEmailValidator,
 

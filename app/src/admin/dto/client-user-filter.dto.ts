@@ -1,5 +1,6 @@
-import {AuthUserTypes} from "../services/client-user.service";
+
 import {SortingType} from "../../core/models/data/sorting-type.enum";
+import {AuthUserTypes} from "../../core/models/data/auth-user-type.enum";
 
 export class ClientUserFilterDto
 {
