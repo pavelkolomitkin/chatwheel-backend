@@ -11,6 +11,7 @@ export type UserDocument = Document & User;
 export const ROLE_USER = 'ROLE_USER';
 export const ROLE_CLIENT_USER = 'ROLE_CLIENT_USER';
 export const ROLE_ADMIN_USER = 'ROLE_ADMIN_USER';
+export const ROLE_SUPER_ADMIN_USER = 'ROLE_SUPER_ADMIN_USER';
 
 @Exclude()
 @Schema({
@@ -54,7 +55,7 @@ export class User extends BaseSchema {
     fullName: string;
 
     @Expose()
-    roles: string;
+    roles: string[];
 
     @Expose()
     @Prop({
@@ -69,17 +70,19 @@ export class User extends BaseSchema {
     })
     lastActivity: Date;
 
-    @Expose()
+    @Expose({ groups: ['admin'] })
     @Prop({
         type: MongooseSchema.Types.Boolean,
         default: false
     })
     isBlocked: boolean;
 
+    @Expose({ groups: ['admin'] })
     @Prop({
         type: MongooseSchema.Types.String,
         default: null,
-        required: false
+        required: false,
+        maxlength: 1000
     })
     blockingReason: string;
 

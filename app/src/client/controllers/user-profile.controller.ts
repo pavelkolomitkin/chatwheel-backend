@@ -6,10 +6,14 @@ import {ParameterConverterPipe} from "../../core/pipes/parameter-converter.pipe"
 import {AuthGuard} from "@nestjs/passport";
 import {UserProfileService} from "../services/user-profile.service";
 import {ProfileService} from "../services/profile.service";
-import {ValidateUserPipe} from "../pipes/validate-user.pipe";
+import {ValidateUserPipe} from "../../core/pipes/validate-user.pipe";
+import {Roles} from "../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../core/guards/role-based.guard";
 
 @Controller('user-profile')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class UserProfileController
 {
     constructor(
@@ -30,11 +34,11 @@ export class UserProfileController
         }, ParameterConverterPipe, ValidateUserPipe) user: ClientUserDocument
     )
     {
-        await user.populate('interests');
+        await user.populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '));
 
         return {
             // @ts-ignore
-            user: user.serialize(),
+            user: user.serialize(['details']),
             amIBanned: await this.profileService.isAddresseeBanned(user, currentUser),
             isBanned: await this.profileService.isAddresseeBanned(currentUser, user),
         };

@@ -59,6 +59,7 @@ export class Call extends BaseSchema
     })
     conversation: ConversationDocument;
 
+    @Expose({ groups: ['admin'] })
     @Prop({
         type: [MongooseSchema.Types.ObjectId],
         ref: CallMember.name,

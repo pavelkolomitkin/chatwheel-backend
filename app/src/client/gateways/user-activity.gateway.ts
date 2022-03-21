@@ -26,6 +26,8 @@ import {ProfileService} from "../services/profile.service";
 })
 export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+    static I_HAS_BEEN_BLOCKED = 'i_has_been_blocked';
+    static I_HAS_BEEN_DELETED = 'i_has_been_deleted';
     static USER_IS_TYPING_EVENT = 'user_is_typing_event';
 
     static USER_HAS_BANNED_ME = 'user_has_banned_me';
@@ -41,7 +43,7 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
         @InjectModel(UserTypingLog.name) private readonly model: Model<UserTypingLogDocument>,
         @InjectModel(ConversationMessageList.name) private readonly messageListModel: Model<ConversationMessageListDocument>,
         @InjectModel(BannedUser.name) private readonly bannedUserModel: Model<BannedUserDocument>,
-        @InjectModel(ClientUser.name) private readonly clientUserModel: Model<ClientUser>,
+        @InjectModel(ClientUser.name) private readonly clientUserModel: Model<ClientUserDocument>,
         private readonly profileService: ProfileService,
 
         private readonly guard: WsJwtGuard
@@ -53,6 +55,9 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
     }
 
     handleConnection(client: Socket, ...args: any[]): any {
+
+        this.handleIHasBeenDeleted(client);
+        this.handleIHasBeenBlocked(client);
 
         // @ts-ignore
         const { user } = client;
@@ -170,6 +175,58 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
         });
     }
 
+    handleIHasBeenBlocked(client: Socket)
+    {
+        // @ts-ignore
+        const { user } = client;
+
+        // @ts-ignore
+        client.iHasBeenBlockedStream = this
+            .clientUserModel
+            .watch([
+                {
+                    $match: {
+                        'fullDocument._id': user._id,
+                        'fullDocument.isBlocked': true
+                    }
+                }
+            ],
+                { fullDocument: 'updateLookup' });
+
+        // @ts-ignore
+        client.iHasBeenBlockedStream.on('change', async (data) => {
+
+            const { fullDocument: { blockingReason } } = data;
+
+            client.emit(UserActivityGateway.I_HAS_BEEN_BLOCKED, {
+                reason: blockingReason
+            })
+        });
+    }
+
+    handleIHasBeenDeleted(client: Socket)
+    {
+        // @ts-ignore
+        const { user } = client;
+
+        // @ts-ignore
+        client.iHasBeenDeletedStream = this.clientUserModel.watch([
+            {
+                $match: {
+                    'fullDocument._id': user._id,
+                    'fullDocument.deleted': true
+                }
+            }
+        ], { fullDocument: 'updateLookup' });
+
+        // @ts-ignore
+        client.iHasBeenDeletedStream.on('change', async (data) => {
+
+            client.emit(UserActivityGateway.I_HAS_BEEN_DELETED);
+
+        });
+    }
+
     handleDisconnect(client: Socket): any {
 
         // @ts-ignore
@@ -181,6 +238,16 @@ export class UserActivityGateway implements OnGatewayInit, OnGatewayConnection, 
         client.banStream.close();
         // @ts-ignore
         client.banStream = null;
+
+        // @ts-ignore
+        client.iHasBeenBlockedStream.close();
+        // @ts-ignore
+        client.iHasBeenBlockedStream = null;
+
+        // @ts-ignore
+        client.iHasBeenDeletedStream.close();
+        // @ts-ignore
+        client.iHasBeenDeletedStream = null;
 
         // @ts-ignore
         client.conn.close();

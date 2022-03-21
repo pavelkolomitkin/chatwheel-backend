@@ -1,22 +1,20 @@
-import {Controller, Get, UseGuards, UseInterceptors} from '@nestjs/common';
+import {Controller, Get, UseGuards} from '@nestjs/common';
 import {CurrentUser} from '../../core/decorators/user.decorator';
-import {ROLE_CLIENT_USER, User, UserDocument} from '../../core/schemas/user.schema';
+import {UserDocument} from '../../core/schemas/user.schema';
 import {BaseController} from './base.controller';
 import {AuthGuard} from "@nestjs/passport";
-import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
+import {ValidateUserPipe} from "../../core/pipes/validate-user.pipe";
 
 @UseGuards(AuthGuard())
 @Controller('profile')
 export class ProfileController extends BaseController
 {
     @Get('/')
-    async get(@CurrentUser() user: UserDocument)
+    async get(@CurrentUser(null, ValidateUserPipe) user: UserDocument)
     {
-        // @ts-ignore
-        const data = user.serialize(['mine']);
-
         return {
-            user: data
+            // @ts-ignore
+            user: user.serialize(['mine'])
         };
     }
 }

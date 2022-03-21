@@ -25,10 +25,14 @@ import {EditMessageDto} from '../dto/edit-message.dto';
 import {ConversationMessage, ConversationMessageDocument} from '../../core/schemas/conversation-message.schema';
 import {AuthGuard} from '@nestjs/passport';
 import {Message} from '../../core/schemas/message.schema';
-import {ValidateUserPipe} from "../pipes/validate-user.pipe";
+import {ValidateUserPipe} from "../../core/pipes/validate-user.pipe";
+import {Roles} from "../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../core/guards/role-based.guard";
 
 @Controller('message')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class ConversationMessageController
 {
     constructor(

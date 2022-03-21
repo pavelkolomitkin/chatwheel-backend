@@ -14,9 +14,13 @@ import {Message} from "../../core/schemas/message.schema";
 import {ConversationMessageListService} from "../services/conversation-message-list.service";
 import {ProfileService} from "../services/profile.service";
 import {Call} from "../../core/schemas/call.schema";
+import {Roles} from "../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../core/guards/role-based.guard";
 
 @Controller('conversation')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class UserConversationController
 {
     constructor(

@@ -14,7 +14,6 @@ export class RestorePasswordKeyValidator implements ValidatorConstraintInterface
 
     async validate(value: string, validationArguments?: ValidationArguments): Promise<boolean> {
 
-        debugger
         return await this.service.isKeyValid(value);
     }
 

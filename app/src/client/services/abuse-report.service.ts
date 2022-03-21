@@ -30,7 +30,8 @@ export class AbuseReportService
             type: type,
             applicant: applicant,
             respondent: recipient,
-            description: comment
+            description: comment,
+            new: true
         });
 
         await result.save();

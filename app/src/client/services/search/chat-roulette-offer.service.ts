@@ -80,7 +80,6 @@ export class ChatRouletteOfferService
                 $project: { _id: 1 }
             }
         ]);
-        debugger
 
         if (searchResults.length === 0)
         {

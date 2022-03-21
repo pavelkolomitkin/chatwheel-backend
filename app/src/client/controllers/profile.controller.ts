@@ -12,9 +12,13 @@ import {GeoLocationDto} from "../dto/geo-location.dto";
 import {AuthGuard} from "@nestjs/passport";
 import {ParameterConverter, ParameterConverterSourceType} from "../../core/decorators/parameter-converter.decorator";
 import {ConversationMessageService} from "../services/conversation-message.service";
+import {Roles} from "../../core/decorators/role.decorator";
+import {ROLE_CLIENT_USER} from "../../core/schemas/user.schema";
+import {RoleBasedGuard} from "../../core/guards/role-based.guard";
 
 @Controller('profile')
-@UseGuards(AuthGuard('jwt'))
+@Roles(ROLE_CLIENT_USER)
+@UseGuards(AuthGuard('jwt'), RoleBasedGuard)
 export class ProfileController
 {
     constructor(
