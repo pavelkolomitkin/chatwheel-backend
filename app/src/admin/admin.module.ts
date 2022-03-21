@@ -11,6 +11,8 @@ import {CallService} from "./services/call.service";
 import {CallController} from "./controllers/call.controller";
 import {ClientUserStatisticsService} from "./services/statistics/client-user-statistics.service";
 import {UserStatisticsController} from "./controllers/statistics/user-statistics.controller";
+import {AbuseReportStatisticsController} from "./controllers/statistics/abuse-report-statistics.controller";
+import {AbuseReportStatisticsService} from "./services/statistics/abuse-report-statistics.service";
 
 @Module({
     controllers: [
@@ -18,7 +20,8 @@ import {UserStatisticsController} from "./controllers/statistics/user-statistics
         AbuseReportController,
         AdminUserController,
         CallController,
-        UserStatisticsController
+        UserStatisticsController,
+        AbuseReportStatisticsController
     ],
     providers: [
         ClientUserService,
@@ -26,6 +29,7 @@ import {UserStatisticsController} from "./controllers/statistics/user-statistics
         AdminUserService,
         CallService,
         ClientUserStatisticsService,
+        AbuseReportStatisticsService,
 
         EditedEmailValidator,
 

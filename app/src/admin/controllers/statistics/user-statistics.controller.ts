@@ -7,6 +7,7 @@ import {AuthGuard} from "@nestjs/passport";
 import {RoleBasedGuard} from "../../../core/guards/role-based.guard";
 import {ClientUserStatisticsService} from "../../services/statistics/client-user-statistics.service";
 import {AuthUserTypes} from "../../../core/models/data/auth-user-type.enum";
+import {MonthPeriodDto} from "../../dto/month-period.dto";
 
 @Controller('client-user-statistics')
 @Roles(ROLE_ADMIN_USER)
@@ -37,8 +38,9 @@ export class UserStatisticsController
 
     @Get('months')
     async getMonthsStatistics(
-        @Query('startMonth') startMonth: Date = null,
-        @Query('endMonth') endMonth: Date = null,
+        @Query() period: MonthPeriodDto,
+        @Query('startMonth') startMonth: Date,
+        @Query('endMonth') endMonth: Date
     )
     {
         const allUsers = await this.service.getMonthsStatistics(startMonth, endMonth);

@@ -1,12 +1,12 @@
-import {BaseService} from "../base.service";
 import {Injectable} from "@nestjs/common";
 import {InjectModel} from "@nestjs/mongoose";
 import {ClientUser, ClientUserDocument, SocialMediaType} from "../../../core/schemas/client-user.schema";
 import {Model} from "mongoose";
 import {AuthUserTypes} from "../../../core/models/data/auth-user-type.enum";
+import {StatisticBaseService} from "./statistic-base.service";
 
 @Injectable()
-export class ClientUserStatisticsService extends BaseService
+export class ClientUserStatisticsService extends StatisticBaseService
 {
     constructor(
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>
@@ -45,19 +45,9 @@ export class ClientUserStatisticsService extends BaseService
         }
     }
 
-    getEndMonthTime(month: Date)
-    {
-        const endDay: number = (new Date(month.getFullYear(), month.getMonth() + 1, 0)).getDate();
 
-        return new Date(month.getFullYear(), month.getMonth(), endDay, 23, 59, 59);
-    }
 
-    getStartMonthTime(month: Date)
-    {
-        return new Date(month.getFullYear(), month.getMonth(), 1, 0, 0, 0);
-    }
-
-    async getMonthsStatistics(startMonth: Date = null, endMonth: Date = null, authType: AuthUserTypes = null)
+    async getMonthsStatistics(startMonth: Date, endMonth: Date, authType: AuthUserTypes = null)
     {
         const startFilter: Date = this.getStartMonthTime(startMonth);
         const endFilter: Date = this.getEndMonthTime(endMonth);

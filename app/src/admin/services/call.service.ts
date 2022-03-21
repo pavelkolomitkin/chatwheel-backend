@@ -27,7 +27,6 @@ export class CallService extends BaseService
 
         this.handleSearchFilter(filter, searchFilter);
 
-        debugger
 
         const query: Query<any, any> = this.model.find(filter);
 
