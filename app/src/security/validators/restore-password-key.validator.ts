@@ -3,6 +3,7 @@ import {Injectable} from "@nestjs/common";
 import {RestorePasswordKeyService} from "../services/restore-password-key.service";
 
 @Injectable()
+@ValidatorConstraint({ name: 'RestorePasswordKeyValidator', async: true })
 export class RestorePasswordKeyValidator implements ValidatorConstraintInterface
 {
     constructor(private readonly service: RestorePasswordKeyService) {

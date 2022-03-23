@@ -1,10 +1,11 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
-import {ValidationArguments, ValidatorConstraintInterface} from "class-validator";
+import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from "class-validator";
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from "mongoose";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 
 @Injectable()
+@ValidatorConstraint({ name: 'SocialNetActualUserValidator', async: true })
 export class SocialNetActualUserValidator implements ValidatorConstraintInterface
 {
     private message: string;

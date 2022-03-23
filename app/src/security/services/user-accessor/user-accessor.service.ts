@@ -81,14 +81,4 @@ export class UserAccessorService
 
         return this.getActualUser(filter, this.model);
     }
-
-    getActualVkUser(vkId: string)
-    {
-        const filter = this.getActualFilter({
-            socialMediaUserId: vkId,
-            socialMediaType: SocialMediaType.VK,
-        });
-
-        return this.getActualUser(filter, this.clientUserModel);
-    }
 }

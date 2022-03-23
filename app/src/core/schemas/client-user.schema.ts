@@ -12,7 +12,8 @@ export type ClientUserDocument = UserDocument & ClientUser;
 
 export enum SocialMediaType {
     VK = 0,
-    GOOGLE = 1
+    FB = 1,
+    GOOGLE = 2
 }
 
 @Exclude()
