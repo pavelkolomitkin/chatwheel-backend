@@ -1,11 +1,11 @@
 import {BadRequestException, Injectable} from "@nestjs/common";
 import {HttpService} from "@nestjs/axios";
-import {VkAuthDto} from "../dto/vk-auth.dto";
+import {VkAuthDto} from "../../dto/vk-auth.dto";
 import {InjectModel} from "@nestjs/mongoose";
-import {ClientUser, ClientUserDocument, SocialMediaType} from "../../core/schemas/client-user.schema";
+import {ClientUser, ClientUserDocument, SocialMediaType} from "../../../core/schemas/client-user.schema";
 import {Model} from "mongoose";
-import {SecurityTokenService} from "./security-token.service";
-import {UserAccessorService} from "./user-accessor/user-accessor.service";
+import {SecurityTokenService} from "../security-token.service";
+import {UserAccessorService} from "../user-accessor/user-accessor.service";
 
 @Injectable()
 export class VkAuthService
@@ -14,7 +14,6 @@ export class VkAuthService
         private readonly http: HttpService,
         @InjectModel(ClientUser.name) private readonly model: Model<ClientUserDocument>,
         private readonly tokenService: SecurityTokenService,
-        private readonly userAccessor: UserAccessorService
     ) {
     }
 
@@ -45,7 +44,12 @@ export class VkAuthService
 
 
         // find a user with the id = data.userId and type=vk among ClientUser
-        let user: ClientUserDocument = <ClientUserDocument> await this.userAccessor.getActualVkUser(id.toString());
+        //let user: ClientUserDocument = <ClientUserDocument> await this.userAccessor.getActualVkUser(id.toString());
+        let user: ClientUserDocument = await this.model.findOne({
+            socialMediaUserId: id.toString(),
+            socialMediaType: SocialMediaType.VK,
+        });
+
 
         // if there is no one
             // create a new one with the corresponding fields received from the vk api url

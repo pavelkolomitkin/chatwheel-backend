@@ -49,6 +49,7 @@
     "mongoose-autopopulate": "^0.16.0",
     "mongoose-delete": "^0.5.4",
     "nestjs-console": "^7.0.1",
+    "node-fetch": "^3.2.3",
     "passport": "^0.5.2",
     "passport-http-bearer": "^1.0.1",
     "passport-jwt": "^4.0.0",

@@ -18,25 +18,6 @@ export class UserService extends BaseService
         return this.model;
     }
 
-    /**
-     * @deprecated
-     * @param id
-     */
-    getActivatedUserById(id: string)
-    {
-        return this.model
-            .findOne({
-            _id: new Types.ObjectId(id),
-            isBlocked: { $ne: true },
-            isDeleted: { $ne: true }
-        });
-    }
-
-    getActualUser(id: string, roles: string[])
-    {
-
-    }
-
     getUserByEmail(email: string)
     {
         return this.model.findOne({email});

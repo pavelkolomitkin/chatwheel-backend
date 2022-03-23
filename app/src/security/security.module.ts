@@ -23,9 +23,10 @@ import {UserService} from "./services/user.service";
 import {WsJwtGuard} from "./guards/ws-jwt.guard";
 import {JwtAuthService} from "./services/jwt-auth.service";
 import {HttpModule} from "@nestjs/axios";
-import {VkAuthService} from "./services/vk-auth.service";
+import {VkAuthService} from "./services/social-net-auth/vk-auth.service";
 import {VkAuthController} from "./controllers/vk-auth.controller";
 import {UserAccessorService} from "./services/user-accessor/user-accessor.service";
+import {SocialNetActualUserValidator} from "./validators/social-net-actual-user.validator";
 
 @Module({
     imports: [
@@ -55,7 +56,7 @@ import {UserAccessorService} from "./services/user-accessor/user-accessor.servic
     controllers: [
         LoginPasswordController,
         ProfileController,
-        VkAuthController
+        VkAuthController,
     ],
     providers: [
         UserAccessorService,
@@ -68,6 +69,7 @@ import {UserAccessorService} from "./services/user-accessor/user-accessor.servic
         ConfirmationAccountKeyService,
         VkAuthService,
 
+        SocialNetActualUserValidator,
         UniqueUserEmailValidator,
         UserRegisterConfirmationKeyValidator,
         RestorePasswordKeyValidator,

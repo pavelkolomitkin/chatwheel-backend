@@ -51,6 +51,8 @@ services:
       RESTORE_PASSWORD_REQUEST_INTERVAL: 120 #How long should the user wait before they would have a chance to request a new password-restore key(is seconds)
       USER_NEARBY_SEARCH_MAX_RADIUS_M: 30000
       CHAT_ROULETTE_OFFER_AWAIT_TIME: 30000
+      FACEBOOK_APP_ID: 'FACEBOOK_APP_ID' # DO NOT COMMIT IT
+      FACEBOOK_APP_SECRET: 'FACEBOOK_APP_SECRET' # DO NOT COMMIT IT!!!
 #      MAIL_HOST: 'smtp.localhost.ru'
 #      MAIL_PORT: 25
 #      MAIL_USER: test
