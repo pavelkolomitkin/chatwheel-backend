@@ -83,27 +83,27 @@ export class ProfileController
         };
     }
 
-    @Put('update-residence-country')
-    @HttpCode(HttpStatus.OK)
-    async updateResidenceCountry(
-        // @Body('id', ParameterConverterPipe) country: CountryDocument,
-        @ParameterConverter({
-            model: Country.name,
-            field: 'id',
-            paramName: 'id',
-            sourceType: ParameterConverterSourceType.BODY
-        }, ParameterConverterPipe) country: CountryDocument,
-        @CurrentUser() user: ClientUserDocument
-    )
-    {
-        //debugger
-        await this.service.updateResidenceCountry(country, user);
-
-        return {
-            // @ts-ignore
-            user: user.serialize(['mine'])
-        }
-    }
+    // @Put('update-residence-country')
+    // @HttpCode(HttpStatus.OK)
+    // async updateResidenceCountry(
+    //     // @Body('id', ParameterConverterPipe) country: CountryDocument,
+    //     @ParameterConverter({
+    //         model: Country.name,
+    //         field: 'id',
+    //         paramName: 'id',
+    //         sourceType: ParameterConverterSourceType.BODY
+    //     }, ParameterConverterPipe) country: CountryDocument,
+    //     @CurrentUser() user: ClientUserDocument
+    // )
+    // {
+    //     //debugger
+    //     await this.service.updateResidenceCountry(country, user);
+    //
+    //     return {
+    //         // @ts-ignore
+    //         user: user.serialize(['mine'])
+    //     }
+    // }
 
     @Put('update-search-country')
     @HttpCode(HttpStatus.OK)

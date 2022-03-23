@@ -14,6 +14,7 @@ import {ChatRouletteUserActivityService} from "./search/chat-roulette-user-activ
 import {ChatRouletteOfferService} from "./search/chat-roulette-offer.service";
 import {UploadManagerService} from "../../core/services/upload-manager.service";
 import {ImageThumbService} from "../../core/services/image-thumb.service";
+import {CountryService} from "../../core/services/country.service";
 
 @Injectable()
 export class ProfileService
@@ -31,8 +32,9 @@ export class ProfileService
         private readonly interestService: UserInterestService,
         private readonly chatRouletteActivityService: ChatRouletteUserActivityService,
         private readonly chatRouletteOfferService: ChatRouletteOfferService,
-        private uploadService: UploadManagerService,
-        private thumbService: ImageThumbService
+        private readonly uploadService: UploadManagerService,
+        private readonly thumbService: ImageThumbService,
+        private readonly countryService: CountryService
     ) {
     }
 
@@ -157,20 +159,41 @@ export class ProfileService
             }
         }
         );
+
         const updatedUser: ClientUserDocument = await this.model.findOne({ _id: user.id })
             .populate(ProfileService.PROFILE_POPULATE_DEFAULT_FIELDS.join(' '));
+
+        await this.updateResidenceCountryByLocation(updatedUser);
 
         return updatedUser;
     }
 
-    async updateResidenceCountry(country: CountryDocument, user: ClientUserDocument): Promise<ClientUserDocument>
+    async updateResidenceCountryByLocation(user: ClientUserDocument)
     {
-        //debugger
-        user.residenceCountry = country;
+        debugger
+        if (!!user.geoLocation)
+        {
+            const [longitude, latitude] = user.geoLocation.coordinates;
 
-        await user.save();
+            try {
+                const country: CountryDocument = await this
+                    .countryService
+                    .getCountryByGeoLocation({
+                        longitude: <number>longitude,
+                        latitude: <number>latitude
+                    });
 
-        return user;
+                user.residenceCountry = country;
+                await user.save();
+            }
+            catch (error)
+            { }
+        }
+        else
+        {
+            user.residenceCountry = null;
+            await user.save();
+        }
     }
 
     async updateSearchCountry(country: CountryDocument, user: ClientUserDocument): Promise<ClientUserDocument>

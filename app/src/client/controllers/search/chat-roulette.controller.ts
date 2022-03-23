@@ -82,7 +82,7 @@ export class ChatRouletteController
         return {
             id: result.id,
             // @ts-ignore
-            addressee: addressee.serialize(),
+            addressee: addressee.serialize(['details']),
             type: resultType
         };
     }
@@ -105,7 +105,7 @@ export class ChatRouletteController
         return {
             id: offer.id,
             // @ts-ignore
-            addressee: acceptedOffer.user.serialize(),
+            addressee: acceptedOffer.user.serialize(['details']),
             type: ChatRouletteOfferType.SEARCH_PARTNER_ACCEPTED
         };
     }

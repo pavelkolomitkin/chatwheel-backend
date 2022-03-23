@@ -41,10 +41,13 @@ import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schema
 import {ConsoleModule} from "nestjs-console";
 import {AdminUserCli} from "./services/console/admin-user.cli";
 import {RoleBasedGuard} from "./guards/role-based.guard";
+import {CountryService} from "./services/country.service";
+import {HttpModule} from "@nestjs/axios";
 
 @Global()
 @Module({
     imports: [
+        HttpModule,
         ConfigModule.forRoot({
             isGlobal: true,
             load: [customConfig]
@@ -189,7 +192,8 @@ import {RoleBasedGuard} from "./guards/role-based.guard";
         EntityExistsValidator,
         ImageThumbService,
         UploadManagerService,
-        AdminUserCli
+        AdminUserCli,
+        CountryService
     ],
     controllers: [
         CountryController,
@@ -203,6 +207,7 @@ import {RoleBasedGuard} from "./guards/role-based.guard";
         SecurityModule,
         MulterModule,
         UploadManagerService,
+        CountryService,
         ImageThumbService
     ]
 })

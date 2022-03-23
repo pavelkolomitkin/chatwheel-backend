@@ -93,7 +93,7 @@ export class ChatRouletteGateway implements OnGatewayInit, OnGatewayConnection, 
             client.emit(ChatRouletteGateway.CHAT_ROULETTE_USER_ACCEPTED_OFFER, {
                 id: fullDocument._id.toString(),
                 // @ts-ignore
-                addressee: addresseeActivity.user.serialize(),
+                addressee: addresseeActivity.user.serialize(['details']),
                 type: ChatRouletteOfferType.SEARCH_PARTNER_ACCEPTED
             });
         });
