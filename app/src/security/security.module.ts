@@ -27,6 +27,7 @@ import {VkAuthService} from "./services/social-net-auth/vk-auth.service";
 import {VkAuthController} from "./controllers/vk-auth.controller";
 import {UserAccessorService} from "./services/user-accessor/user-accessor.service";
 import {SocialNetActualUserValidator} from "./validators/social-net-actual-user.validator";
+const fs = require('fs');
 
 @Module({
     imports: [
