@@ -1,18 +1,24 @@
 // In this file you can configure migrate-mongo
+const fs = require('fs');
+
+const MONGO_INITDB_ROOT_USERNAME = fs.readFileSync(process.env.MONGO_INITDB_ROOT_USERNAME_FILE);
+const MONGO_INITDB_ROOT_PASSWORD = fs.readFileSync(process.env.MONGO_INITDB_ROOT_PASSWORD_FILE);
+
+const connectionString = 'mongodb://' +
+    MONGO_INITDB_ROOT_USERNAME.toString() + ':' +
+    MONGO_INITDB_ROOT_PASSWORD.toString() + '@' +
+    'mongodb-service' + ':' + process.env.MONGO_DATABASE_PORT;
 
 const config = {
   mongodb: {
-    // TODO Change (or review) the url to your MongoDB:
-    url: process.env.MONGO_CONNECTION_STRING,
 
-    // TODO Change this to your database name:
-    databaseName: process.env.MONGO_INITDB_DATABASE,
+    url: connectionString,
+
+    databaseName: process.env.MONGO_DATABASE_NAME,
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting
       useUnifiedTopology: true, // removes a deprecating warning when connecting
-      //   connectTimeoutMS: 3600000, // increase connection timeout to 1 hour
-      //   socketTimeoutMS: 3600000, // increase socket timeout to 1 hour
     }
   },
 
