@@ -1,5 +1,5 @@
 import {ClassSerializerInterceptor, Global, Module} from '@nestjs/common';
-import {APP_FILTER, APP_INTERCEPTOR, APP_GUARD, APP_PIPE} from '@nestjs/core';
+import {APP_FILTER, APP_INTERCEPTOR} from '@nestjs/core';
 import {BadRequestFilter} from './fiters/bad-request.filter';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {GlobalExceptionFilter} from './fiters/global-exception.filter';
@@ -40,7 +40,6 @@ import {ChatRouletteOffer, ChatRouletteOfferSchema} from "./schemas/chat-roulett
 import {ChatRouletteUserActivity, ChatRouletteUserActivitySchema} from "./schemas/chat-roulette-user-activity.schema";
 import {ConsoleModule} from "nestjs-console";
 import {AdminUserCli} from "./services/console/admin-user.cli";
-import {RoleBasedGuard} from "./guards/role-based.guard";
 import {CountryService} from "./services/country.service";
 import {HttpModule} from "@nestjs/axios";
 
@@ -55,11 +54,20 @@ import {HttpModule} from "@nestjs/axios";
         MongooseModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: async (config: ConfigService) => ({
-                uri: config.get('MONGO_CONNECTION_STRING'),
-                useNewUrlParser: true,
-                autoIndex: false,
-            }),
+            useFactory: async (config: ConfigService) => {
+
+                const connectionString: string = 'mongodb://' +
+                    config.get('MONGO_INITDB_ROOT_USERNAME') + ':' +
+                    config.get('MONGO_INITDB_ROOT_PASSWORD') + '@' +
+                    'mongodb-service' + ':' + config.get('MONGO_DATABASE_PORT');
+
+                return {
+                    uri: connectionString,
+                    dbName: config.get('MONGO_DATABASE_NAME'),
+                    useNewUrlParser: true,
+                    autoIndex: false,
+                }
+            },
         }),
         MongooseModule.forFeature([
             {

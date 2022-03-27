@@ -35,14 +35,13 @@ services:
     hostname: 'node-app-service'
     environment:
       NODE_ENV: 'dev'
-      APP_SECRET: 'change_it'
+      APP_SECRET_FILE: '/run/secrets/APP_SECRET_FILE'
       EMAIL_NO_REPLY: 'noreply@localhost.ru' # NEVER COMMIT THIS STUFF!
-      EMAIL_SENDER_API_KEY: 'change_it' # NEVER COMMIT THIS STUFF!
-      MONGO_CONNECTION_STRING: 'mongodb://mongodb-service:27017/chatwheel'
-      MONGO_INITDB_DATABASE: 'chatwheel'
-      MONGO_REPLICASET: 'rs_chatwheel'
+      EMAIL_SENDER_API_KEY_FILE: '/run/secrets/EMAIL_SENDER_API_KEY_FILE'# NEVER COMMIT THIS STUFF!
+      MONGO_INITDB_ROOT_USERNAME_FILE: '/run/secrets/MONGO_INITDB_ROOT_USERNAME_FILE'
+      MONGO_INITDB_ROOT_PASSWORD_FILE: '/run/secrets/MONGO_INITDB_ROOT_PASSWORD_FILE'
+      MONGO_DATABASE_NAME: 'chatwheel'
       MONGO_DATABASE_PORT: '27017'
-      MONGO_POOL_SIZE: '200'
       PORT: '3000'
       EMAIL_LINK_HOST: 'localhost:4200'
       UPLOAD_DIRECTORY: '/app/upload'
@@ -51,14 +50,15 @@ services:
       RESTORE_PASSWORD_REQUEST_INTERVAL: 120 #How long should the user wait before they would have a chance to request a new password-restore key(is seconds)
       USER_NEARBY_SEARCH_MAX_RADIUS_M: 30000
       CHAT_ROULETTE_OFFER_AWAIT_TIME: 30000
-      FACEBOOK_APP_ID: 'FACEBOOK_APP_ID' # DO NOT COMMIT IT
-      FACEBOOK_APP_SECRET: 'FACEBOOK_APP_SECRET' # DO NOT COMMIT IT!!!
-#      MAIL_HOST: 'smtp.localhost.ru'
-#      MAIL_PORT: 25
-#      MAIL_USER: test
-#      MAIL_PASSWORD: test
-#      SSL_KEY_FILE_PATH: ''
-#      SLL_CERT_FILE_PATH: ''
+      FACEBOOK_APP_ID_FILE: '/run/secrets/FACEBOOK_APP_ID_FILE'
+      FACEBOOK_APP_SECRET_FILE: '/run/secrets/FACEBOOK_APP_SECRET_FILE'
+    secrets:
+      - APP_SECRET_FILE
+      - EMAIL_SENDER_API_KEY_FILE
+      - MONGO_INITDB_ROOT_USERNAME_FILE
+      - MONGO_INITDB_ROOT_PASSWORD_FILE
+      - FACEBOOK_APP_ID_FILE
+      - FACEBOOK_APP_SECRET_FILE
 
 
   mongodb-service:
@@ -71,9 +71,32 @@ services:
       - chatwheel_db_dev:/data/db
     environment:
       MONGO_INITDB_DATABASE: 'chatwheel'
-#      MONGO_INITDB_ROOT_USERNAME: root
-#      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME_FILE: '/run/secrets/MONGO_INITDB_ROOT_USERNAME_FILE'
+      MONGO_INITDB_ROOT_PASSWORD_FILE: '/run/secrets/MONGO_INITDB_ROOT_PASSWORD_FILE'
     command: mongod --replSet rs_chatwheel
+    secrets:
+      - MONGO_INITDB_ROOT_USERNAME_FILE
+      - MONGO_INITDB_ROOT_PASSWORD_FILE
 
 volumes:
   chatwheel_db_dev:
+
+secrets:
+  APP_SECRET_FILE:
+    file: app-secret.txt
+
+  EMAIL_SENDER_API_KEY_FILE:
+    file: email-sender-api-key.txt
+
+  MONGO_INITDB_ROOT_USERNAME_FILE:
+    file: mongo-user-name.txt
+
+  MONGO_INITDB_ROOT_PASSWORD_FILE:
+    file: mongo-password.txt
+
+  FACEBOOK_APP_ID_FILE:
+    file: facebook-app-id.txt
+
+  FACEBOOK_APP_SECRET_FILE:
+    file: facebook-app-secret.txt
+
