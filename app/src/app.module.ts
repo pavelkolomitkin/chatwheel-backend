@@ -4,6 +4,7 @@ import { SecurityModule } from './security/security.module';
 import {RouterModule} from "@nestjs/core";
 import { ClientModule } from './client/client.module';
 import { AdminModule } from './admin/admin.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { AdminModule } from './admin/admin.module';
     SecurityModule,
     ClientModule,
     AdminModule,
+    HealthModule,
 
     RouterModule.register([
       {
@@ -28,10 +30,12 @@ import { AdminModule } from './admin/admin.module';
       {
         path: 'admin',
         module: AdminModule
+      },
+      {
+        path: 'health',
+        module: HealthModule
       }
     ]),
-
-    AdminModule,
   ],
 })
 export class AppModule {}
