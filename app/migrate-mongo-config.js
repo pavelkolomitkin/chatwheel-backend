@@ -4,18 +4,19 @@ const fs = require('fs');
 const MONGO_INITDB_ROOT_USERNAME = fs.readFileSync(process.env.MONGO_INITDB_ROOT_USERNAME_FILE);
 const MONGO_INITDB_ROOT_PASSWORD = fs.readFileSync(process.env.MONGO_INITDB_ROOT_PASSWORD_FILE);
 
+
 const connectionString = 'mongodb://' +
     MONGO_INITDB_ROOT_USERNAME.toString() + ':' +
     MONGO_INITDB_ROOT_PASSWORD.toString() + '@' +
-    'mongodb-service' + ':' + process.env.MONGO_DATABASE_PORT +
-    '/?replicaSet=' + process.env.MONGO_DATABASE_REPLICA_SET;
+    'mongodb-service:' + process.env.MONGO_DATABASE_PORT +
+    '/' + process.env.MONGO_DATABASE_NAME +
+    '?replicaSet=' + process.env.MONGO_DATABASE_REPLICA_SET +
+    '&authSource=admin';
 
 const config = {
   mongodb: {
 
     url: connectionString,
-
-    databaseName: process.env.MONGO_DATABASE_NAME,
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting

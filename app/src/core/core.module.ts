@@ -60,13 +60,16 @@ import {HttpModule} from "@nestjs/axios";
                     config.get('MONGO_INITDB_ROOT_USERNAME') + ':' +
                     config.get('MONGO_INITDB_ROOT_PASSWORD') + '@' +
                     'mongodb-service' + ':' + config.get('MONGO_DATABASE_PORT') +
-                    '/?replicaSet=' + config.get('MONGO_DATABASE_REPLICA_SET');
+                    '/' + config.get('MONGO_DATABASE_NAME') + '?' +
+                    'replicaSet=' + config.get('MONGO_DATABASE_REPLICA_SET') +
+                    '&authSource=admin'
+                ;
 
                 return {
                     uri: connectionString,
-                    dbName: config.get('MONGO_DATABASE_NAME'),
                     useNewUrlParser: true,
                     autoIndex: false,
+                    useUnifiedTopology: true
                 }
             },
         }),
