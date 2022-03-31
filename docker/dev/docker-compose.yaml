@@ -42,6 +42,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD_FILE: '/run/secrets/MONGO_INITDB_ROOT_PASSWORD_FILE'
       MONGO_DATABASE_NAME: 'chatwheel'
       MONGO_DATABASE_PORT: '27017'
+      MONGO_DATABASE_REPLICA_SET: 'rs_chatwheel'
       PORT: '3000'
       EMAIL_LINK_HOST: 'localhost:4200'
       UPLOAD_DIRECTORY: '/app/upload'

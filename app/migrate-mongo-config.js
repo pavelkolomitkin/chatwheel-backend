@@ -7,7 +7,8 @@ const MONGO_INITDB_ROOT_PASSWORD = fs.readFileSync(process.env.MONGO_INITDB_ROOT
 const connectionString = 'mongodb://' +
     MONGO_INITDB_ROOT_USERNAME.toString() + ':' +
     MONGO_INITDB_ROOT_PASSWORD.toString() + '@' +
-    'mongodb-service' + ':' + process.env.MONGO_DATABASE_PORT;
+    'mongodb-service' + ':' + process.env.MONGO_DATABASE_PORT +
+    '/?replicaSet=' + process.env.MONGO_DATABASE_REPLICA_SET;
 
 const config = {
   mongodb: {

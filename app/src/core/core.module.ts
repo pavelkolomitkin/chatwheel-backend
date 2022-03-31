@@ -59,7 +59,8 @@ import {HttpModule} from "@nestjs/axios";
                 const connectionString: string = 'mongodb://' +
                     config.get('MONGO_INITDB_ROOT_USERNAME') + ':' +
                     config.get('MONGO_INITDB_ROOT_PASSWORD') + '@' +
-                    'mongodb-service' + ':' + config.get('MONGO_DATABASE_PORT');
+                    'mongodb-service' + ':' + config.get('MONGO_DATABASE_PORT') +
+                    '/?replicaSet=' + config.get('MONGO_DATABASE_REPLICA_SET');
 
                 return {
                     uri: connectionString,
