@@ -146,10 +146,16 @@ export class ChatRouletteService
         const resultItem = searchResult[0];
         const partner: ClientUserDocument = await this.profileService.getById(resultItem.user._id.toString());
 
-        const result: ChatRouletteOfferDocument = await this.offerService.create(user, partner);
-        await result.populate('addressee');
+        try {
+            const result: ChatRouletteOfferDocument = await this.offerService.create(user, partner);
+            await result.populate('addressee');
 
-        return result;
+            return result;
+        }
+        catch (error)
+        {
+            return null;
+        }
     }
 
     async acceptOffer(offer: ChatRouletteOfferDocument, addressee: ClientUserDocument)
