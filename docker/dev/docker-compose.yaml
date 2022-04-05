@@ -70,6 +70,7 @@ services:
     restart: always
     volumes:
       - chatwheel_db_dev:/data/db
+      - dev_prod_chatwheel_db_backup:/backup
     environment:
       MONGO_INITDB_DATABASE: 'chatwheel'
       MONGO_INITDB_ROOT_USERNAME_FILE: '/run/secrets/MONGO_INITDB_ROOT_USERNAME_FILE'
@@ -81,6 +82,8 @@ services:
 
 volumes:
   chatwheel_db_dev:
+  dev_prod_chatwheel_db_backup:
+    external: true
 
 secrets:
   APP_SECRET_FILE:

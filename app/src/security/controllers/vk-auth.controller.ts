@@ -14,7 +14,6 @@ export class VkAuthController
     @HttpCode(HttpStatus.OK)
     async auth(@Body() data: VkAuthDto)
     {
-        debugger
         const token: string = await this.vkAuthService.auth(data);
 
         return {

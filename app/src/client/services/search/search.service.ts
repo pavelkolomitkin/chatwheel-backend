@@ -74,9 +74,14 @@ export class SearchService
         const { limit, offset } = getPageLimitOffset(page, 20);
 
         const result = await this.userModel.find({
-            $near: {
-                $geometry: user.geoLocation,
-                $maxDistance: maxDistance
+            geoLocation: {
+                $near: {
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: user.geoLocation.coordinates
+                    },
+                    $maxDistance: <Number>maxDistance
+                },
             },
             _id: { $ne: user._id },
             deleted: { $ne: true }

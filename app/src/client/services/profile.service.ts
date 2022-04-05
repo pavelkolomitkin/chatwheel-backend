@@ -170,7 +170,6 @@ export class ProfileService
 
     async updateResidenceCountryByLocation(user: ClientUserDocument)
     {
-        debugger
         if (!!user.geoLocation)
         {
             const [longitude, latitude] = user.geoLocation.coordinates;
