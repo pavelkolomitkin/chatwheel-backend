@@ -11,6 +11,5 @@ export class AnswerCallDto
     @IsNotEmpty()
     peerId: string;
 
-    @IsNotEmpty()
-    socketId: string;
+    socketId?: string;
 }

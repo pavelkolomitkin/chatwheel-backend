@@ -1,4 +1,4 @@
-import {IsBoolean, IsNotEmpty, Validate} from 'class-validator';
+import {IsBoolean, IsNotEmpty, IsOptional, Validate} from 'class-validator';
 import {EntityExistsValidator} from '../../core/validators/entity-exists.validator';
 import {ClientUser} from '../../core/schemas/client-user.schema';
 
@@ -12,6 +12,5 @@ export class InitiateCallDto
     @IsBoolean()
     isDirect: boolean = false;
 
-    @IsNotEmpty()
-    socketId: string;
+    socketId?: string;
 }
