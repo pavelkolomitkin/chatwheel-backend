@@ -59,7 +59,8 @@ export class SearchService
                         $box: boundaries
                     }
                 },
-                deleted: { $ne: true }
+                deleted: { $ne: true },
+                isActivated: true
             },
         );
 
@@ -84,7 +85,8 @@ export class SearchService
                 },
             },
             _id: { $ne: user._id },
-            deleted: { $ne: true }
+            deleted: { $ne: true },
+            isActivated: true
         })
             .populate(ClientUser.COMMON_POPULATED_FIELDS.join(' '))
             .skip(offset)
