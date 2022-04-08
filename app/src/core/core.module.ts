@@ -42,6 +42,10 @@ import {ConsoleModule} from "nestjs-console";
 import {AdminUserCli} from "./services/console/admin-user.cli";
 import {CountryService} from "./services/country.service";
 import {HttpModule} from "@nestjs/axios";
+import {ClientUserCli} from "./services/console/client-user.cli";
+import {PipeReaderCli} from "./services/console/helper/pipe-reader.cli";
+import {PasswordPromptCli} from "./services/console/helper/password-prompt.cli";
+import {PasswordValidatorCli} from "./services/console/helper/password-validator.cli";
 
 @Global()
 @Module({
@@ -204,7 +208,11 @@ import {HttpModule} from "@nestjs/axios";
         EntityExistsValidator,
         ImageThumbService,
         UploadManagerService,
+        PasswordValidatorCli,
+        PipeReaderCli,
+        PasswordPromptCli,
         AdminUserCli,
+        ClientUserCli,
         CountryService
     ],
     controllers: [

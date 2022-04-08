@@ -80,10 +80,13 @@ export class LoginPasswordService extends BaseService
     {
         const { email } = data;
 
-        const user: ClientUserDocument = <ClientUserDocument> await this.userAccessor.getActualUserByEmail(email);
-        if (!user)
+        let user: ClientUserDocument = null;
+        try {
+            user = <ClientUserDocument> await this.userAccessor.getActualUserByEmail(email);
+        }
+        catch (error)
         {
-            throw new BadRequestException('The account is not found!');
+            throw new BadRequestException({email: 'The account is not found!'});
         }
 
         try {

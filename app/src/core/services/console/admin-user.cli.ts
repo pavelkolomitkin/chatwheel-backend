@@ -7,6 +7,8 @@ import {UserService} from "../../../security/services/user.service";
 import {CoreException} from "../../exceptions/core.exception";
 import {LoginPasswordService} from "../../../security/services/login-password.service";
 import * as commander from 'commander';
+import {PasswordPromptCli} from "./helper/password-prompt.cli";
+import {PasswordValidatorCli} from "./helper/password-validator.cli";
 let prompt = require('prompt');
 
 
@@ -17,6 +19,8 @@ export class AdminUserCli
         @InjectModel(AdminUser.name) private readonly adminUserModel: Model<AdminUserDocument>,
         private readonly userService: UserService,
         private readonly loginService: LoginPasswordService,
+        private readonly passwordPrompt: PasswordPromptCli,
+        private readonly passwordValidator: PasswordValidatorCli
     ) {
     }
 
@@ -31,9 +35,7 @@ export class AdminUserCli
         await this.validateFullName(fullName);
         await this.validateEmail(email);
 
-        const { password, repeatPassword } = await this.getPassword();
-        await this.validatePassword(password, repeatPassword);
-
+        const password = await this.passwordPrompt.getPassword();
         const passwordHash: string = await this.loginService.getHashedPassword(password);
 
         const admin: AdminUserDocument = new this.adminUserModel({
@@ -47,58 +49,6 @@ export class AdminUserCli
         await admin.save();
 
         console.log(`The admin has been created...`);
-    }
-
-    async getPassword(): Promise<{ password: string, repeatPassword: string }>
-    {
-
-        const schema = {
-            properties: {
-                password: {
-                    hidden: true,
-                    description: 'Password(at least 6 symbols)',
-                    required: true
-                },
-                repeatPassword: {
-                    hidden: true,
-                    description: 'Repeat the password',
-                    required: true
-                }
-            }
-        };
-
-        return new Promise((resolve, reject) => {
-
-            prompt.get(schema, (error, result) => {
-
-                if (error)
-                {
-                    throw new CoreException(error);
-                }
-
-                resolve(result);
-
-            });
-
-        });
-    }
-
-    async validatePassword(password: string, passwordRepeat: string)
-    {
-        if (!password && (password.trim() === ''))
-        {
-            throw new CoreException(`The password must not be empty!`);
-        }
-
-        if (password !== passwordRepeat)
-        {
-            throw new CoreException(`The passwords do not match!`);
-        }
-
-        if (password.length < 6)
-        {
-            throw new CoreException(`The password is shorter than 6 symbols!`);
-        }
     }
 
     async validateFullName(fullName: string)
