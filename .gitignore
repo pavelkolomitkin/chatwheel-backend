@@ -2,6 +2,8 @@
 /app/dist
 /app/node_modules
 
+/**/*.csv
+
 # Logs
 /app/logs
 *.log
@@ -34,3 +36,4 @@
 !.vscode/extensions.json
 /app/thumbs/
 /app/upload/
+

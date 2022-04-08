@@ -2,6 +2,7 @@ import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 import {BaseSchema} from "./base.schema";
 import {createSerializer} from "../serializer/serializer";
 import {Exclude, Expose} from "class-transformer";
+import {Document} from "mongoose";
 
 export type UserInterestDocument = UserInterest & Document;
 
