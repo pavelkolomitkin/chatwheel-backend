@@ -61,4 +61,18 @@ export class ChatRouletteUserActivityService
 
         return activity;
     }
+
+    async setUserBusyStatus(user: ClientUserDocument, isBusy: boolean): Promise<void>
+    {
+        await this.model.updateOne(
+            {
+                user: user._id
+            },
+            {
+                $set: {
+                    isBusy: isBusy
+                }
+            }
+        );
+    }
 }

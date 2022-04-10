@@ -69,8 +69,6 @@ export class ChatRouletteService
 
     async findPartner(user: ClientUserDocument, withPreferences: boolean = false): Promise<ChatRouletteOfferDocument>
     {
-        // TODO create a unique index for the field 'chatrouletteoffers.user' in order to avoid multiplying offers from the same user
-
         // find the previous offer made by user to anyone
             // if it exists
                 // remove it keeping the addressee link in order to rule out them from the next offer that is gonna be made
