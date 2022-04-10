@@ -4,12 +4,14 @@ import {CallMember, CallMemberDocument, CallMemberStatus} from "../../core/schem
 import {Model} from "mongoose";
 import {ClientUser, ClientUserDocument} from "../../core/schemas/client-user.schema";
 import {CallDocument} from "../../core/schemas/call.schema";
+import {ChatRouletteUserActivityService} from "./search/chat-roulette-user-activity.service";
 
 @Injectable()
 export class CallMemberService
 {
     constructor(
-        @InjectModel(CallMember.name) private readonly model: Model<CallMemberDocument>
+        @InjectModel(CallMember.name) private readonly model: Model<CallMemberDocument>,
+        private readonly chatActivityService: ChatRouletteUserActivityService
     ) {
     }
 
@@ -43,9 +45,10 @@ export class CallMemberService
     {
         member.joinTime = new Date();
         member.socketConnectionId = socketId;
-        member.status = CallMemberStatus.CONNECTING
-
+        member.status = CallMemberStatus.CONNECTING;
         await member.save();
+
+        await this.chatActivityService.setUserBusyStatus(member.user, true);
     }
 
     async rejectCall(member: CallMemberDocument)

@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Controller,
     HttpCode,
     HttpStatus, NotFoundException,
@@ -23,6 +24,7 @@ import {
 import {Roles} from "../../../core/decorators/role.decorator";
 import {ROLE_CLIENT_USER} from "../../../core/schemas/user.schema";
 import {RoleBasedGuard} from "../../../core/guards/role-based.guard";
+import {ChatRouletteUserActivityService} from "../../services/search/chat-roulette-user-activity.service";
 
 @Controller('chat-roulette')
 @Roles(ROLE_CLIENT_USER)
@@ -31,6 +33,7 @@ export class ChatRouletteController
 {
     constructor(
         private readonly service: ChatRouletteService,
+        private readonly activityService: ChatRouletteUserActivityService
     ) {
     }
 
@@ -42,7 +45,13 @@ export class ChatRouletteController
         @UploadedFile() file
     )
     {
-        await this.service.turnOn(user, file);
+        try {
+            await this.service.turnOn(user, file);
+        }
+        catch (error)
+        {
+            throw new BadRequestException();
+        }
     }
 
     @Put('turn-off')
@@ -51,7 +60,13 @@ export class ChatRouletteController
         @CurrentUser() user: ClientUserDocument
     )
     {
-        await this.service.turnOff(user);
+        try {
+            await this.service.turnOff(user);
+        }
+        catch (error)
+        {
+            throw new BadRequestException();
+        }
     }
 
     @Post('search')
@@ -60,6 +75,8 @@ export class ChatRouletteController
         @CurrentUser() user: ClientUserDocument
     )
     {
+        await this.activityService.setUserBusyStatus(user, false);
+
         let resultType: string = ChatRouletteOfferType.SEARCH_PARTNER_FOUND;
 
         let result = await this.service.findAddressedOffer(user);
